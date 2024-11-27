@@ -7,6 +7,8 @@ import {
   deleteStudent,
   getStudentByUsn,
   getStudentBySrNo,
+  loginStudent,
+  updateStudentPassword,
 } from "../controllers/student";
 
 const router = Router();
@@ -134,5 +136,13 @@ router.put("/students/:id", updateStudent);
  *         description: Student not found
  */
 router.delete("/students/:id", deleteStudent);
+
+// login student
+
+router.post("/students/login", loginStudent);
+
+// update password
+
+router.put("/students/password/:id", updateStudentPassword);
 
 export default router;

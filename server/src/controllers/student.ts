@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import Student from "../models/student";
+import { compare } from "bcrypt";
 
 // Get all students
 export const getStudents = async (req: Request, res: Response) => {
@@ -86,6 +87,43 @@ export const deleteStudent = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Student not found" });
     }
     res.status(200).json({ message: "Student deleted" });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// login student
+export const loginStudent = async (req: Request, res: Response) => {
+  try {
+    const student = await Student.findOne({ usn: req.body.srNo });
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const isMatch = await compare(req.body.password, student.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    res.status(200).json(student);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// update student password
+
+export const updateStudentPassword = async (req: Request, res: Response) => {
+  try {
+    const student = await Student.findById(req.params.id);
+    if (!student) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    const isMatch = await compare(req.body.oldPassword, student.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid credentials" });
+    }
+    student.password = req.body.newPassword;
+    const updatedStudent = await student.save();
+    res.status(200).json(updatedStudent);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }

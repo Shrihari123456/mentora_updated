@@ -252,6 +252,8 @@ interface IStudent extends Document {
   mediumOfInstruction: string;
   previousInstitutionDetails: string;
   achievements: IAchievement[];
+  mentor: Types.ObjectId;
+  password: string;
 }
 
 // Sibling schema
@@ -314,6 +316,15 @@ const studentSchema = new Schema<IStudent>({
   mediumOfInstruction: { type: String, required: true },
   previousInstitutionDetails: { type: String, required: true },
   achievements: { type: [achievementSchema], default: [] },
+  mentor: { type: Schema.Types.ObjectId, ref: "Mentor" },
+  password: { type: String, required: true },
+});
+
+// Hash the password before saving
+studentSchema.pre("save", async function (next) {
+  const hashedPassword = await hash(this.password, 10);
+  this.password = hashedPassword;
+  next();
 });
 
 const Student = mongoose.model<IStudent>("Student", studentSchema);
