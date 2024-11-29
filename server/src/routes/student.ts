@@ -9,9 +9,10 @@ import {
   getStudentBySrNo,
   loginStudent,
   updateStudentPassword,
+  getUnassignedStudents,
 } from "../controllers/student";
 
-const router = Router();
+const studRouter = Router();
 
 /**
  * @swagger
@@ -28,7 +29,10 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/Student'
  */
-router.get("/students", getStudents);
+studRouter.get("/students", getStudents);
+//get all unassigned students
+
+studRouter.get("/students-unassigned", getUnassignedStudents);
 
 /**
  * @swagger
@@ -52,15 +56,15 @@ router.get("/students", getStudents);
  *       404:
  *         description: Student not found
  */
-router.get("/students/:id", getStudentById);
+studRouter.get("/students/:id", getStudentById);
 
 //fetch by srNo
 
-router.get("/students/srNo/:srNo", getStudentBySrNo);
+studRouter.get("/students/srNo/:srNo", getStudentBySrNo);
 
 //fetch by usn
 
-router.get("/students/usn/:usn", getStudentByUsn);
+studRouter.get("/students/usn/:usn", getStudentByUsn);
 
 /**
  * @swagger
@@ -83,7 +87,7 @@ router.get("/students/usn/:usn", getStudentByUsn);
  *       400:
  *         description: Bad request
  */
-router.post("/students", createStudent);
+studRouter.post("/students", createStudent);
 
 /**
  * @swagger
@@ -115,7 +119,7 @@ router.post("/students", createStudent);
  *       400:
  *         description: Bad request
  */
-router.put("/students/:id", updateStudent);
+studRouter.put("/students/:id", updateStudent);
 
 /**
  * @swagger
@@ -135,14 +139,14 @@ router.put("/students/:id", updateStudent);
  *       404:
  *         description: Student not found
  */
-router.delete("/students/:id", deleteStudent);
+studRouter.delete("/students/:id", deleteStudent);
 
 // login student
 
-router.post("/students/login", loginStudent);
+studRouter.post("/students/login", loginStudent);
 
 // update password
 
-router.put("/students/password/:id", updateStudentPassword);
+studRouter.put("/students/password/:id", updateStudentPassword);
 
-export default router;
+export default studRouter;

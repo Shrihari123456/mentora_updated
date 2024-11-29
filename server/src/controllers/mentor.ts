@@ -4,6 +4,7 @@ import { Request, Response } from "express";
 import Mentor from "../models/mentor";
 import Student from "../models/student";
 import { compare } from "bcrypt";
+import { ObjectId } from "mongoose";
 
 // Get all mentors
 export const getMentors = async (req: Request, res: Response) => {
@@ -68,7 +69,7 @@ export const updateMentor = async (req: Request, res: Response) => {
 // Delete a mentor by ID
 export const deleteMentor = async (req: Request, res: Response) => {
   try {
-    const mentor = await Mentor.findByIdAndRemove(req.params.id);
+    const mentor = await Mentor.findByIdAndDelete(req.params.id);
     if (!mentor) {
       return res.status(404).json({ message: "Mentor not found" });
     }

@@ -12,7 +12,7 @@ import {
   updatePassword,
 } from "../controllers/mentor";
 
-const router = Router();
+const mentRouter = Router();
 
 /**
  * @swagger
@@ -29,7 +29,7 @@ const router = Router();
  *               items:
  *                 $ref: '#/components/schemas/Mentor'
  */
-router.get("/mentors", getMentors);
+mentRouter.get("/mentors", getMentors);
 
 /**
  * @swagger
@@ -53,11 +53,11 @@ router.get("/mentors", getMentors);
  *       404:
  *         description: Mentor not found
  */
-router.get("/mentors/:id", getMentorById);
+mentRouter.get("/mentors/:id", getMentorById);
 
 //fetch by empId
 
-router.get("/mentors/empId/:empId", getMentorByEmpId);
+mentRouter.get("/mentors/empId/:empId", getMentorByEmpId);
 
 /**
  * @swagger
@@ -80,7 +80,7 @@ router.get("/mentors/empId/:empId", getMentorByEmpId);
  *       400:
  *         description: Bad request
  */
-router.post("/mentors", createMentor);
+mentRouter.post("/mentors", createMentor);
 
 /**
  * @swagger
@@ -112,7 +112,7 @@ router.post("/mentors", createMentor);
  *       400:
  *         description: Bad request
  */
-router.put("/mentors/:id", updateMentor);
+mentRouter.put("/mentors/:id", updateMentor);
 
 /**
  * @swagger
@@ -132,7 +132,7 @@ router.put("/mentors/:id", updateMentor);
  *       404:
  *         description: Mentor not found
  */
-router.delete("/mentors/:id", deleteMentor);
+mentRouter.delete("/mentors/:id", deleteMentor);
 
 // add student to mentor
 
@@ -170,7 +170,7 @@ router.delete("/mentors/:id", deleteMentor);
  *       400:
  *         description: Bad request
  */
-router.put("/mentors/addStudent/:id", addStudent);
+mentRouter.put("/mentors/addStudent/:id", addStudent);
 
 // get students of a mentor
 
@@ -199,7 +199,7 @@ router.put("/mentors/addStudent/:id", addStudent);
  *         description: Mentor not found
  */
 
-router.get("/mentors/students/:id", getStudents);
+mentRouter.get("/mentors/students/:id", getStudents);
 
 // login mentor
 
@@ -234,7 +234,7 @@ router.get("/mentors/students/:id", getStudents);
  *         description: Bad request
  */
 
-router.post("/mentors/login", loginMentor);
+mentRouter.post("/mentors/login", loginMentor);
 
 // update mentor password
 
@@ -276,6 +276,6 @@ router.post("/mentors/login", loginMentor);
  *         description: Bad request
  */
 
-router.put("/mentors/updatePassword/:id", updatePassword);
+mentRouter.put("/mentors/updatePassword/:id", updatePassword);
 
-export default router;
+export default mentRouter;

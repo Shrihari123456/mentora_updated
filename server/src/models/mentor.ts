@@ -12,7 +12,7 @@ interface IMentor extends Document {
   password: string;
 }
 
-const mentorSchema: Schema = new Schema({
+const mentorSchema: Schema = new Schema<IMentor>({
   name: { type: String, required: true },
   empId: { type: String, required: true },
   dept: { type: String, required: true },
@@ -24,7 +24,7 @@ const mentorSchema: Schema = new Schema({
 });
 
 mentorSchema.pre("save", async function (next) {
-  const hashedPassword = await hash(this.password, 10);
+  const hashedPassword = await hash(this.password as string, 10);
   this.password = hashedPassword;
   next();
 });

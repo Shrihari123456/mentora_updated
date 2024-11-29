@@ -1,5 +1,6 @@
+import Mentor from "../models/mentor";
 import Student from "../models/student";
-import * as mongoose from "mongoose";
+import mongoose from "mongoose";
 
 const stud1 = new Student({
   email: "ashikaursn01@gmail.com",
@@ -49,6 +50,7 @@ const stud1 = new Student({
   previousInstitutionDetails:
     "MMK nd SDM girls pu college , Krishnamurthy Puram , Mysuru",
   achievements: [],
+  password: "password",
 });
 
 const stud2 = new Student({
@@ -112,7 +114,31 @@ const stud2 = new Student({
       prizeDetails: "1st place in district level",
     },
   ],
+  password: "password",
 });
+
+const ment1 = new Mentor({
+  name: "Mentor 1",
+  empId: "MNT001",
+  dept: "CSE",
+  designation: "Assistant Professor",
+  email: "ment1@jssstuniv.in",
+  phone: "9876543210",
+  students: [],
+  password: "password",
+});
+
+const ment2 = new Mentor({
+  name: "Mentor 2",
+  empId: "MNT002",
+  dept: "ISE",
+  designation: "Assistant Professor",
+  email: "ment2@jssstuniv.in",
+  phone: "9876543210",
+  students: [],
+  password: "password",
+});
+
 await mongoose.connect(
   process.env.MONGODB_URI || "mongodb://localhost:27017/test"
 );
@@ -120,4 +146,6 @@ await mongoose.connect(
 console.log("Connected to MongoDB...");
 await stud1.save();
 await stud2.save();
+await ment1.save();
+await ment2.save();
 console.log("Students saved successfully!");

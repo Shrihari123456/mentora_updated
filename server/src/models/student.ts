@@ -1,5 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-
+import { hash } from "bcrypt";
 /**
  * @swagger
  * components:

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Student from "../models/student";
 import { compare } from "bcrypt";
+import { Types, ObjectId } from "mongoose";
 
 // Get all students
 export const getStudents = async (req: Request, res: Response) => {
@@ -47,6 +48,19 @@ export const getStudentByUsn = async (req: Request, res: Response) => {
     }
     res.status(200).json(student);
   } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+//get all unassigned students
+export const getUnassignedStudents = async (req: Request, res: Response) => {
+  try {
+    const students = await Student.find({
+      mentor: { $exists: false },
+    });
+    res.status(200).json(students);
+  } catch (error) {
+    console.log(error);
     res.status(500).json({ message: error.message });
   }
 };
