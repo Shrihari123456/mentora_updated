@@ -1,7 +1,6 @@
 import { Router } from "express";
 import {
   getMentors,
-  getMentorById,
   createMentor,
   updateMentor,
   deleteMentor,
@@ -31,32 +30,8 @@ const mentRouter = Router();
  */
 mentRouter.get("/mentors", getMentors);
 
-/**
- * @swagger
- * /mentors/{id}:
- *   get:
- *     summary: Retrieve a single mentor by ID
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The mentor ID
- *     responses:
- *       200:
- *         description: A single mentor
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Mentor'
- *       404:
- *         description: Mentor not found
- */
-mentRouter.get("/mentors/:id", getMentorById);
-
 //fetch by empId
-
+//@ts-expect-error
 mentRouter.get("/mentors/empId/:empId", getMentorByEmpId);
 
 /**
@@ -80,6 +55,7 @@ mentRouter.get("/mentors/empId/:empId", getMentorByEmpId);
  *       400:
  *         description: Bad request
  */
+
 mentRouter.post("/mentors", createMentor);
 
 /**
@@ -112,6 +88,7 @@ mentRouter.post("/mentors", createMentor);
  *       400:
  *         description: Bad request
  */
+//@ts-expect-error
 mentRouter.put("/mentors/:id", updateMentor);
 
 /**
@@ -132,6 +109,7 @@ mentRouter.put("/mentors/:id", updateMentor);
  *       404:
  *         description: Mentor not found
  */
+//@ts-expect-error
 mentRouter.delete("/mentors/:id", deleteMentor);
 
 // add student to mentor
@@ -170,6 +148,7 @@ mentRouter.delete("/mentors/:id", deleteMentor);
  *       400:
  *         description: Bad request
  */
+//@ts-expect-error
 mentRouter.put("/mentors/addStudent/:id", addStudent);
 
 // get students of a mentor
@@ -198,7 +177,7 @@ mentRouter.put("/mentors/addStudent/:id", addStudent);
  *       404:
  *         description: Mentor not found
  */
-
+//@ts-expect-error
 mentRouter.get("/mentors/students/:id", getStudents);
 
 // login mentor
@@ -233,7 +212,7 @@ mentRouter.get("/mentors/students/:id", getStudents);
  *       400:
  *         description: Bad request
  */
-
+//@ts-expect-error
 mentRouter.post("/mentors/login", loginMentor);
 
 // update mentor password
@@ -275,7 +254,7 @@ mentRouter.post("/mentors/login", loginMentor);
  *       400:
  *         description: Bad request
  */
-
+//@ts-expect-error
 mentRouter.put("/mentors/updatePassword/:id", updatePassword);
 
 export default mentRouter;

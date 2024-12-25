@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "bunx --bun vite",
+    "devNode": "vite",
     "build": "bunx --bun vite build",
     "lint": "eslint .",
     "preview": "vite preview"
@@ -12,10 +13,16 @@
   "dependencies": {
     "@emotion/react": "^11.13.5",
     "@emotion/styled": "^11.13.5",
+    "@fileforge/client": "^0.1.18",
+    "@fileforge/react-print": "^0.1.150",
     "@mui/material": "^6.1.9",
     "@tanstack/react-query": "^5.61.5",
     "app": "file:",
     "axios": "^1.7.8",
+    "html-to-pdfmake": "^2.5.18",
+    "jspdf": "^2.5.2",
+    "pdfmake": "^0.3.0-beta.14",
+    "puppeteer": "^23.11.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.53.2",

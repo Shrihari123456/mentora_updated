@@ -15,22 +15,7 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-interface Student {
-  name: string;
-  srNo: string;
-  email: string;
-  admissionYear: number;
-  section: string;
-  dob: string;
-  phone: string;
-  permanentAddress: string;
-  presentAddress: string;
-  father: { name: string; occupation: string; phone: string };
-  mother: { name: string; occupation: string; phone: string };
-  siblings: { relationType: string; name: string; occupation: string }[];
-  achievements: { domain: string; activity: string; prizeDetails: string }[];
-  mentor: { name: string } | null;
-}
+
 
 const ViewAllStudents: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -174,65 +159,187 @@ const ViewAllStudents: React.FC = () => {
           >
             <Tab label="Personal Details" />
             <Tab label="Parents" />
-            <Tab label="Siblings" />
+            <Tab label="Academic profile" />
             <Tab label="Achievements" />
           </Tabs>
           {selectedStudent && (
             <>
               {activeTab === 0 && (
                 <Box sx={{ px: 2, mb: 3 }}>
-                  <Typography>
-                    <strong>Name:</strong> {selectedStudent.name}
-                  </Typography>
-                  <Typography>
-                    <strong>SR Number:</strong> {selectedStudent.srNo}
-                  </Typography>
-                  <Typography>
-                    <strong>Phone:</strong> {selectedStudent.phone}
-                  </Typography>
-                  <Typography>
-                    <strong>DOB:</strong>{" "}
-                    {new Date(selectedStudent.dob).toLocaleDateString()}
-                  </Typography>
-                  <Typography>
-                    <strong>Address:</strong> {selectedStudent.permanentAddress}
-                  </Typography>
-                  <Typography>
-                    <strong>Mentor:</strong>{" "}
-                    {selectedStudent.mentor ? (
-                      selectedStudent.mentor.name
-                    ) : (
-                      <em>Not Assigned</em>
-                    )}
-                  </Typography>
+                  <div
+                    style={{
+                      display: "flex",
+                      flexDirection: "row",
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        flexDirection: "column",
+                      }}
+                    >
+                      <Typography>
+                        <strong>Name of the student:</strong>{" "}
+                        {selectedStudent.name}
+                      </Typography>
+                      <Typography>
+                        <strong>Admission Year:</strong>{" "}
+                        {selectedStudent.admissionYear}
+                      </Typography>
+                      <Typography>
+                        <strong>SR Number:</strong> {selectedStudent.srNo}
+                      </Typography>
+                      <Typography>
+                        <strong>USN:</strong>
+                        {selectedStudent.usn ? (
+                          selectedStudent.usn
+                        ) : (
+                          <em>Not Assigned</em>
+                        )}
+                      </Typography>
+                      <Typography>
+                        <strong>Entrance Exam Rank:</strong>{" "}
+                        {selectedStudent.entranceExamRank ? (
+                          <>
+                            {selectedStudent.entranceExamRank.rank} in{" "}
+                            {selectedStudent.entranceExamRank.examName}
+                          </>
+                        ) : (
+                          <em>Not Available</em>
+                        )}
+                      </Typography>
+                      <Typography>
+                        <strong>DOB:</strong>{" "}
+                        {new Date(selectedStudent.dob).toLocaleDateString()}
+                      </Typography>
+
+                      <Typography>
+                        <strong>Section:</strong> {selectedStudent.section}
+                      </Typography>
+                      <Typography>
+                        <strong>Permanent Address:</strong>{" "}
+                        {selectedStudent.permanentAddress}
+                      </Typography>
+                      <Typography>
+                        <strong> Height:</strong> {selectedStudent.height} cm
+                      </Typography>
+                      <Typography>
+                        <strong> Weight:</strong> {selectedStudent.weight} kg
+                      </Typography>
+                      <Typography>
+                        <strong>Blood Group:</strong>{" "}
+                        {selectedStudent.bloodGroup}
+                      </Typography>
+                      <Typography>
+                        <strong>Phone:</strong> {selectedStudent.phone}
+                      </Typography>
+                      <Typography>
+                        <strong>Email:</strong> {selectedStudent.email}
+                      </Typography>
+                      <Typography>
+                        <strong>Resident Type:</strong>{" "}
+                        {selectedStudent.residentType}
+                      </Typography>
+                      {selectedStudent.hostelWardenDetails ? (
+                        <Typography>
+                          <strong>Hostel Warden : </strong>
+                          {selectedStudent.hostelWardenDetails}
+                        </Typography>
+                      ) : selectedStudent.localGuardianDetails ? (
+                        <Typography>
+                          <strong>Local Guardian : </strong>
+                          {selectedStudent.hostelWardenDetails}
+                        </Typography>
+                      ) : (
+                        " "
+                      )}
+                      <Typography>
+                        <strong>Mentor:</strong>{" "}
+                        {selectedStudent.mentor ? (
+                          selectedStudent.mentor.name
+                        ) : (
+                          <em>Not Assigned</em>
+                        )}
+                      </Typography>
+                    </div>
+                    <img
+                      src={"https://placehold.co/150"}
+                      alt={" "}
+                      style={{
+                        width: "150px",
+                        height: "150px",
+                        marginLeft: "auto",
+                        marginTop: "auto",
+                        marginBottom: "auto",
+                      }}
+                    />
+                  </div>
                 </Box>
               )}
               {activeTab === 1 && (
                 <Box sx={{ px: 2, mb: 3 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 2 }}>
+                    <strong>Father</strong>
+                  </Typography>
                   <Typography>
-                    <strong>Father:</strong> {selectedStudent.father.name}
+                    <strong>Name:</strong> {selectedStudent.father.name}
                   </Typography>
                   <Typography>
                     <strong>Occupation:</strong>{" "}
                     {selectedStudent.father.occupation}
                   </Typography>
                   <Typography>
+                    <strong>Work Address: </strong>
+                    {selectedStudent.father.workAddress}
+                  </Typography>
+                  <Typography>
+                    <strong>Permanent Address</strong>{" "}
+                    {selectedStudent.father.permanentAddress}
+                  </Typography>
+                  <Typography>
+                    <strong>Education:</strong>{" "}
+                    {selectedStudent.father.education}
+                  </Typography>
+
+                  <Typography>
                     <strong>Phone:</strong> {selectedStudent.father.phone}
                   </Typography>
                   <Typography>
-                    <strong>Mother:</strong> {selectedStudent.mother.name}
+                    <strong>Email:</strong> {selectedStudent.father.email}
+                  </Typography>
+
+                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 2 }}>
+                    <strong>Mother</strong>
+                  </Typography>
+
+                  <Typography>
+                    <strong>Name:</strong> {selectedStudent.mother.name}
                   </Typography>
                   <Typography>
                     <strong>Occupation:</strong>{" "}
                     {selectedStudent.mother.occupation}
                   </Typography>
                   <Typography>
+                    <strong>Work Address: </strong>
+                    {selectedStudent.mother.workAddress}
+                  </Typography>
+                  <Typography>
+                    <strong>Permanent Address</strong>{" "}
+                    {selectedStudent.mother.permanentAddress}
+                  </Typography>
+                  <Typography>
+                    <strong>Education:</strong>{" "}
+                    {selectedStudent.mother.education}
+                  </Typography>
+                  <Typography>
                     <strong>Phone:</strong> {selectedStudent.mother.phone}
                   </Typography>
-                </Box>
-              )}
-              {activeTab === 2 && (
-                <Box sx={{ px: 2, mb: 3 }}>
+                  <Typography>
+                    <strong>Email:</strong> {selectedStudent.mother.email}
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600, mt: 2 }}>
+                    <strong>Siblings</strong>
+                  </Typography>
                   {selectedStudent.siblings.length === 0 ? (
                     <Typography>No siblings found!</Typography>
                   ) : (
@@ -252,6 +359,22 @@ const ViewAllStudents: React.FC = () => {
                   )}
                 </Box>
               )}
+              {activeTab === 2 && (
+                <Box sx={{ px: 2, mb: 3 }}>
+                  <Typography>
+                    <strong>Name of Previous Institution:</strong>{" "}
+                    {selectedStudent.previousInstitutionDetails}
+                  </Typography>
+                  <Typography>
+                    <strong>Previous Course Completed:</strong>{" "}
+                    {selectedStudent.previousCourse}
+                  </Typography>
+                  <Typography>
+                    <strong>Medium of Instruction:</strong>{" "}
+                    {selectedStudent.mediumOfInstruction}
+                  </Typography>
+                </Box>
+              )}
               {activeTab === 3 && (
                 <Box sx={{ px: 2, mb: 3 }}>
                   {selectedStudent.achievements.length === 0 ? (
@@ -267,6 +390,9 @@ const ViewAllStudents: React.FC = () => {
                         </Typography>
                         <Typography>
                           <strong>Prize:</strong> {achievement.prizeDetails}
+                        </Typography>
+                        <Typography>
+                          <strong>Institue:</strong> {achievement.institution}
                         </Typography>
                       </Box>
                     ))

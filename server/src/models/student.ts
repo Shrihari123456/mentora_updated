@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { hash } from "bcrypt";
 /**
  * @swagger
  * components:
@@ -219,6 +218,11 @@ interface IParent {
   workAddress: string;
 }
 
+interface IEntranceExamRank {
+  rank: string;
+  examName: string;
+}
+
 // Interface for the main student document
 interface IStudent extends Document {
   email: string;
@@ -242,7 +246,7 @@ interface IStudent extends Document {
   hostelWardenDetails?: string;
   localGuardianDetails?: string;
   hobbies: string[];
-  entranceExamRank: string;
+  entranceExamRank: IEntranceExamRank;
   familyIncomeStatus: string;
   father: IParent;
   mother: IParent;
@@ -255,6 +259,11 @@ interface IStudent extends Document {
   mentor: Types.ObjectId;
   password: string;
 }
+
+const entranceExamRankSchema = new Schema<IEntranceExamRank>({
+  rank: { type: String, required: true },
+  examName: { type: String, required: true },
+});
 
 // Sibling schema
 const siblingSchema = new Schema<ISibling>({
@@ -306,7 +315,10 @@ const studentSchema = new Schema<IStudent>({
   hostelWardenDetails: { type: String },
   localGuardianDetails: { type: String },
   hobbies: { type: [String], default: [] },
-  entranceExamRank: { type: String, required: true },
+  entranceExamRank: {
+    type: entranceExamRankSchema,
+    required: true,
+  },
   familyIncomeStatus: { type: String, required: true },
   father: { type: parentSchema, required: true },
   mother: { type: parentSchema, required: true },
@@ -320,10 +332,23 @@ const studentSchema = new Schema<IStudent>({
   password: { type: String, required: true },
 });
 
+const convertDriveLinkToDirect = (driveLink: string) => {
+  const regex = /(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
+  const match = driveLink.match(regex);
+
+  if (match && match[1]) {
+    const fileId = match[1];
+    return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
+  } else {
+    return driveLink;
+  }
+};
+
 // Hash the password before saving
 studentSchema.pre("save", async function (next) {
-  const hashedPassword = await hash(this.password, 10);
+  const hashedPassword = await Bun.password.hash(this.password);
   this.password = hashedPassword;
+  this.photo = convertDriveLinkToDirect(this.photo);
   next();
 });
 

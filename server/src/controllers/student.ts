@@ -1,28 +1,29 @@
 import { Request, Response } from "express";
 import Student from "../models/student";
-import { compare } from "bcrypt";
-import { Types, ObjectId } from "mongoose";
 
 // Get all students
 export const getStudents = async (req: Request, res: Response) => {
   try {
-    const students = await Student.find();
+    const students = await Student.find().populate("mentor", "name");
     res.status(200).json(students);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
 // Get a single student by ID
 export const getStudentById = async (req: Request, res: Response) => {
   try {
-    const student = await Student.findById(req.params.id);
+    const student = await Student.findById(req.params.id).populate(
+      "mentor",
+      "name"
+    );
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
     res.status(200).json(student);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -34,8 +35,8 @@ export const getStudentBySrNo = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Student not found" });
     }
     res.status(200).json(student);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (error: unknown) {
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -48,7 +49,7 @@ export const getStudentByUsn = async (req: Request, res: Response) => {
     }
     res.status(200).json(student);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -61,7 +62,7 @@ export const getUnassignedStudents = async (req: Request, res: Response) => {
     res.status(200).json(students);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -72,7 +73,7 @@ export const createStudent = async (req: Request, res: Response) => {
     const newStudent = await student.save();
     res.status(201).json(newStudent);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: (error as Error).message });
   }
 };
 
@@ -89,7 +90,7 @@ export const updateStudent = async (req: Request, res: Response) => {
     }
     res.status(200).json(updatedStudent);
   } catch (error) {
-    res.status(400).json({ message: error.message });
+    res.status(400).json({ message: (error as Error).message });
   }
 };
 
@@ -102,7 +103,7 @@ export const deleteStudent = async (req: Request, res: Response) => {
     }
     res.status(200).json({ message: "Student deleted" });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -113,13 +114,16 @@ export const loginStudent = async (req: Request, res: Response) => {
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
-    const isMatch = await compare(req.body.password, student.password);
+    const isMatch = await Bun.password.verify(
+      req.body.password,
+      student.password
+    );
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
     res.status(200).json(student);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };
 
@@ -131,7 +135,10 @@ export const updateStudentPassword = async (req: Request, res: Response) => {
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
-    const isMatch = await compare(req.body.oldPassword, student.password);
+    const isMatch = await Bun.password.verify(
+      req.body.oldPassword,
+      student.password
+    );
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -139,6 +146,6 @@ export const updateStudentPassword = async (req: Request, res: Response) => {
     const updatedStudent = await student.save();
     res.status(200).json(updatedStudent);
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: (error as Error).message });
   }
 };

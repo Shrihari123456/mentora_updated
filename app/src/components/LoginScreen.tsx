@@ -58,7 +58,7 @@ const LoginScreen: React.FC = () => {
     },
     onError: (error) => {
       console.error("Login failed:", error);
-      alert(error?.message || "Invalid credentials. Please try again.");
+      alert("Invalid credentials. Please try again.");
     },
   });
 

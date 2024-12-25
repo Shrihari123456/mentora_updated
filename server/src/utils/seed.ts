@@ -23,7 +23,10 @@ const stud1 = new Student({
   residentAddress: "Same as permanent address",
 
   hobbies: ["Singing", "Painting", "Drawing"],
-  entranceExamRank: "2985",
+  entranceExamRank: {
+    rank: "2985",
+    examName: "CET",
+  },
   familyIncomeStatus: "Above Poverty Line (APL)",
   father: {
     name: "NATARAJA URS N",
@@ -74,7 +77,10 @@ const stud2 = new Student({
   residentAddress: "Same as permanent address",
 
   hobbies: ["Playing Sports"],
-  entranceExamRank: "79632",
+  entranceExamRank: {
+    rank: "2985",
+    examName: "CET",
+  },
   familyIncomeStatus: "Below Poverty Line (BPL)",
   father: {
     name: "JAYARAM",
@@ -94,6 +100,7 @@ const stud2 = new Student({
     permanentAddress: "#1526/1 2nd cross soppinakeri mandimohalla mysore",
     workAddress: "#1526/1 soppinakeri mandi mohalla Mysore",
   },
+
   siblings: [
     {
       relationType: "Brother",
@@ -144,8 +151,13 @@ await mongoose.connect(
 );
 
 console.log("Connected to MongoDB...");
+await Student.deleteMany({});
+await Mentor.deleteMany({});
 await stud1.save();
 await stud2.save();
+console.log("Students saved successfully!");
 await ment1.save();
 await ment2.save();
-console.log("Students saved successfully!");
+console.log("Mentors saved successfully!");
+
+process.exit(0);

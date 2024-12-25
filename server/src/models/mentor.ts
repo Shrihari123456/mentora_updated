@@ -1,5 +1,4 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-import { hash } from "bcrypt";
 
 interface IMentor extends Document {
   name: string;
@@ -24,7 +23,7 @@ const mentorSchema: Schema = new Schema<IMentor>({
 });
 
 mentorSchema.pre("save", async function (next) {
-  const hashedPassword = await hash(this.password as string, 10);
+  const hashedPassword = await Bun.password.hash(this.password as string);
   this.password = hashedPassword;
   next();
 });

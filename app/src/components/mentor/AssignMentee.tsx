@@ -49,7 +49,9 @@ const AssignMentees: React.FC = () => {
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries("unassignedStudents"); // Refresh student list
+      queryClient.invalidateQueries({
+        queryKey: ["unassignedStudents"],
+      }); // Refresh student list
       setSnackbarMessage("Student assigned successfully!");
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
