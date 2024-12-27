@@ -110,7 +110,7 @@ export const deleteStudent = async (req: Request, res: Response) => {
 // login student
 export const loginStudent = async (req: Request, res: Response) => {
   try {
-    const student = await Student.findOne({ usn: req.body.srNo });
+    const student = await Student.findOne({ srNo: req.body.srNo });
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }

@@ -8,6 +8,7 @@ import ViewAllStudents from "./components/mentor/ViewAllStudents";
 import ViewMentees from "./components/mentor/ViewMentees";
 import AssignMentees from "./components/mentor/AssignMentee";
 import StudentMentoringRecord from "./components/mentor/Report";
+import StudentDashboard from "./components/students/StudentDashBoard";
 
 const App: React.FC = () => {
   const isLoggedIn = getAuth();
@@ -20,7 +21,7 @@ const App: React.FC = () => {
             <Route path="/mentor/dashboard" element={<MentorDashboard />} />
             <Route
               path="/student/dashboard"
-              element={<h1>Welcome, Student!</h1>}
+              element={<StudentDashboard />}
             />
             <Route path="/mentor/profile" element={<MentorProfile />} />
             <Route path="/mentor/students" element={<ViewAllStudents />} />

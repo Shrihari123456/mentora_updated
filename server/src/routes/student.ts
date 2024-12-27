@@ -57,7 +57,7 @@ studRouter.get("/students-unassigned", getUnassignedStudents);
  *         description: Student not found
  */
 //@ts-expect-error
-studRouter.get("/students/:id", getStudentBySrNo);
+studRouter.get("/students/:id", getStudentById);
 
 //fetch by srNo
 
