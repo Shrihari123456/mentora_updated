@@ -26,7 +26,7 @@ const MentorProfile: React.FC = () => {
     queryFn: async () => {
       if (!auth?.userDetails?._id) throw new Error("No mentor ID found");
       const response = await axios.get(
-        `http://localhost:8080/mentors/${auth.userDetails._id}`
+        `http://localhost:8080/mentors/empID/${auth.userDetails.empId}`
       );
       return response.data;
     },
@@ -110,8 +110,8 @@ const MentorProfile: React.FC = () => {
           {[
             { label: "Name", value: data?.name },
             { label: "Employee ID", value: data?.empId },
-            { label: "Department", value: data?.dept },
             { label: "Designation", value: data?.designation },
+            { label: "Department", value: data?.dept },
             { label: "Email", value: data?.email },
             { label: "Phone", value: data?.phone },
           ].map((field, index) => (
