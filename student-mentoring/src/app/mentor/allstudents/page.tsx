@@ -94,6 +94,18 @@ const ViewAllStudents: React.FC = () => {
       >
         All Students
       </Typography>
+      <Typography
+        variant="h5"
+        align="center"
+        sx={{
+          color: "#666666", // Lighter color for a subtler look
+          fontWeight: "normal", // Reduced boldness
+          mb: 5, // Reduced margin to bring subtitle closer to the title
+          fontSize: "1rem", // Slightly smaller size
+        }}
+      >
+        Click on any of the cards below to view student details.
+      </Typography>
       {students?.length ? (
         <Grid container spacing={3}>
           {students.map((student) => (

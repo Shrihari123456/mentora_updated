@@ -136,6 +136,19 @@ const ViewMentees: React.FC = () => {
       >
         Mentees
       </Typography>
+      <Typography
+        variant="h5"
+        align="center"
+        sx={{
+          color: "#666666", // Lighter color for a subtler look
+          fontWeight: "normal", // Reduced boldness
+          mb: 5, // Reduced margin to bring subtitle closer to the title
+          fontSize: "1rem", // Slightly smaller size
+        }}
+      >
+        Click on any of the mentees to view their details and download the
+        report.
+      </Typography>
       {mentees.length ? (
         <Grid container spacing={3}>
           {mentees.map((student) => (
