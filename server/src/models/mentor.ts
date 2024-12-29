@@ -23,6 +23,9 @@ const mentorSchema: Schema = new Schema<IMentor>({
 });
 
 mentorSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
   const hashedPassword = await Bun.password.hash(this.password as string);
   this.password = hashedPassword;
   next();

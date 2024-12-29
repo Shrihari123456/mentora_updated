@@ -9,7 +9,7 @@ export default async function MentorProfile() {
   }
 
   const res = await fetch(
-    `http://localhost:8080/mentors/empId/${session.user.id}`
+    `http://localhost:8080/mentors/empId/${session.user.userid}`
   );
 
   if (!res.ok) {
@@ -74,7 +74,10 @@ export default async function MentorProfile() {
           <form
             action={async () => {
               "use server";
-              await signOut();
+              await signOut({
+                redirect: true,
+                redirectTo: "/login",
+              });
             }}
           >
             <Button variant="outlined" type="submit">

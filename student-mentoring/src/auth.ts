@@ -1,5 +1,5 @@
 import NextAuth, { type DefaultSession } from "next-auth";
-import { JWT } from "next-auth/jwt";
+import "next-auth/jwt";
 import Credentials from "next-auth/providers/credentials";
 import { authPayload } from "./lib/zod";
 
@@ -57,6 +57,7 @@ async function getUserFromDb({ userid, password, role }: AuthPayload) {
       }
     }
   } catch (e) {
+    console.error(e);
     throw new Error("Invalid credentials.");
   }
   return null;

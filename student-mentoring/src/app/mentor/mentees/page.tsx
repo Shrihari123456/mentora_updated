@@ -32,10 +32,10 @@ const ViewMentees: React.FC = () => {
     const fetchMentees = async () => {
       setIsLoading(true);
       setError(null);
-      if (!session.data?.user.userid) return;
+      if (!session.data?.user.id) return;
       try {
         const response = await fetch(
-          `http://localhost:8080/mentors/students/${session.data?.user.userid}`
+          `http://localhost:8080/mentors/students/${session.data?.user.id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch mentees");
@@ -50,7 +50,7 @@ const ViewMentees: React.FC = () => {
     };
 
     fetchMentees();
-  }, [session.data?.user.userid]);
+  }, [session.data?.user.id]);
 
   const handleOpenDialog = (student: Student) => {
     setSelectedStudent(student);

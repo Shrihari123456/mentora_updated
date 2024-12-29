@@ -161,43 +161,43 @@ function MenteeReport({ student }: { student: Student }) {
         <div className="section-title">II. Family Profile</div>
         <table>
           <tr>
-            <td>Father's Name</td>
+            <td>Father&apos;s Name</td>
             <td>{fatherName}</td>
           </tr>
           <tr>
-            <td>Father's Occupation and Address</td>
+            <td>Father&apos;s Occupation and Address</td>
             <td>{fatherOccupation}</td>
           </tr>
           <tr>
-            <td>Father's Education</td>
+            <td>Father&apos;s Education</td>
             <td>{fatherEducation}</td>
           </tr>
           <tr>
-            <td>Father's Mobile Number</td>
+            <td>Father&apos;s Mobile Number</td>
             <td>{fatherMobile}</td>
           </tr>
           <tr>
-            <td>Father's Email ID</td>
+            <td>Father&apos;s Email ID</td>
             <td>{fatherEmail}</td>
           </tr>
           <tr>
-            <td>Mother's Name</td>
+            <td>Mother&apos;s Name</td>
             <td>{motherName}</td>
           </tr>
           <tr>
-            <td>Mother's Occupation</td>
+            <td>Mother&apos;s Occupation</td>
             <td>{motherOccupation}</td>
           </tr>
           <tr>
-            <td>Mother's Education</td>
+            <td>Mother&apos;s Education</td>
             <td>{motherEducation}</td>
           </tr>
           <tr>
-            <td>Mother's Mobile Number</td>
+            <td>Mother&apos;s Mobile Number</td>
             <td>{motherMobile}</td>
           </tr>
           <tr>
-            <td>Mother's Email ID</td>
+            <td>Mother&apos;s Email ID</td>
             <td>{motherEmail}</td>
           </tr>
           <tr>
@@ -238,7 +238,7 @@ function MenteeReport({ student }: { student: Student }) {
             <td>{residenceType}</td>
           </tr>
           <tr>
-            <td>For Hostellites: Local Guardian's Name (LG)</td>
+            <td>For Hostellites: Local Guardian&apos;s Name (LG)</td>
             <td>{guardianName}</td>
           </tr>
           <tr>
@@ -273,7 +273,7 @@ function MenteeReport({ student }: { student: Student }) {
           </tr>
           {student.achievements.map((achievement) => {
             return (
-              <tr>
+              <tr key={`${achievement.domain}-${achievement.activity}`}>
                 <td>{achievement.domain}</td>
                 <td>{achievement.institution}</td>
                 <td>{achievement.activity}</td>

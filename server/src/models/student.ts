@@ -346,6 +346,9 @@ const convertDriveLinkToDirect = (driveLink: string) => {
 
 // Hash the password before saving
 studentSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
+    return next();
+  }
   const hashedPassword = await Bun.password.hash(this.password);
   this.password = hashedPassword;
   this.photo = convertDriveLinkToDirect(this.photo);

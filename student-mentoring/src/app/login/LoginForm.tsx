@@ -1,5 +1,4 @@
 "use client";
-import { signIn } from "@/auth";
 import {
   Box,
   Button,
@@ -14,7 +13,6 @@ import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { signin } from "./actions";
 import { toast } from "sonner";
-import { metadata } from "../layout";
 
 interface LoginFormValues {
   role: "mentor" | "student";
@@ -40,10 +38,10 @@ const LoginScreen: React.FC = () => {
       await signin(data);
       toast.dismiss();
       toast.success("Logged in successfully");
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
       toast.dismiss();
-      // @ts-expect-error
+
       if (e.message === "NEXT_REDIRECT") {
         return;
       }
