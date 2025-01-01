@@ -94,6 +94,22 @@ export const updateStudent = async (req: Request, res: Response) => {
   }
 };
 
+export const updateStudentBySrNo = async (req: Request, res: Response) => {
+  try {
+    const updatedStudent = await Student.findOneAndUpdate(
+      { srNo: req.params.srNo },
+      req.body,
+      { new: true }
+    );
+    if (!updatedStudent) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+    res.status(200).json(updatedStudent);
+  } catch (error) {
+    res.status(400).json({ message: (error as Error).message });
+  }
+};
+
 // Delete a student by ID
 export const deleteStudent = async (req: Request, res: Response) => {
   try {

@@ -10,6 +10,7 @@ import {
   loginStudent,
   updateStudentPassword,
   getUnassignedStudents,
+  updateStudentBySrNo,
 } from "../controllers/student";
 
 const studRouter = Router();
@@ -124,6 +125,10 @@ studRouter.post("/students", createStudent);
  */
 //@ts-expect-error
 studRouter.put("/students/:id", updateStudent);
+
+
+studRouter.put("/students/srNo/:srNo", updateStudentBySrNo);
+
 
 /**
  * @swagger
