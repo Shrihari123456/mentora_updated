@@ -13,8 +13,10 @@ import {
   Tab,
   Button,
   CircularProgress,
+  TextField,
 } from "@mui/material";
 import Image from "next/image";
+import Link from "next/link";
 import MenteeReport from "./menteeReport";
 import { compile } from "@fileforge/react-print";
 import { useSession } from "next-auth/react";
@@ -24,8 +26,10 @@ const ViewMentees: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [mentees, setMentees] = useState<Student[] | null>(null);
+  const [filteredMentees, setFilteredMentees] = useState<Student[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   const session = useSession();
 
   useEffect(() => {
@@ -42,6 +46,7 @@ const ViewMentees: React.FC = () => {
         }
         const data = await response.json();
         setMentees(data);
+        setFilteredMentees(data);
       } catch (err: any) {
         setError(err.message || "An unexpected error occurred");
       } finally {
@@ -51,6 +56,16 @@ const ViewMentees: React.FC = () => {
 
     fetchMentees();
   }, [session.data?.user.id]);
+
+  useEffect(() => {
+    if (mentees) {
+      const filtered = mentees.filter((student) =>
+        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        student.srNo.toString().includes(searchTerm)
+      );
+      setFilteredMentees(filtered);
+    }
+  }, [searchTerm, mentees]);
 
   const handleOpenDialog = (student: Student) => {
     setSelectedStudent(student);
@@ -140,18 +155,30 @@ const ViewMentees: React.FC = () => {
         variant="h5"
         align="center"
         sx={{
-          color: "#666666", // Lighter color for a subtler look
-          fontWeight: "normal", // Reduced boldness
-          mb: 5, // Reduced margin to bring subtitle closer to the title
-          fontSize: "1rem", // Slightly smaller size
+          color: "#666666",
+          fontWeight: "normal",
+          mb: 3,
+          fontSize: "1rem",
         }}
       >
         Click on any of the mentees to view their details and download the
         report.
       </Typography>
-      {mentees.length ? (
+      <Box sx={{ mb: 4, textAlign: "center" }}>
+        <TextField
+          variant="outlined"
+          label="Search Mentees"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+          }}
+        />
+      </Box>
+      {filteredMentees && filteredMentees.length ? (
         <Grid container spacing={3}>
-          {mentees.map((student) => (
+          {filteredMentees.map((student) => (
             <Grid item xs={12} sm={6} md={4} key={student.srNo}>
               <Paper
                 sx={{
@@ -496,6 +523,18 @@ const ViewMentees: React.FC = () => {
           >
             Download Mentee Details (PDF)
           </Button>
+          <Link passHref href={`/mentor/student-edit/${selectedStudent?.srNo}`} >
+          <Button variant="contained"
+            color="primary"
+            sx={{
+              textTransform: "none",
+              padding: "8px 24px",
+              fontWeight: 500,
+              ml: 2,
+            }}>
+            Edit
+            </Button>
+          </Link>
         </Box>
       </Dialog>
     </Box>

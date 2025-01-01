@@ -11,8 +11,8 @@ import {
   Paper,
 } from "@mui/material";
 import { Fa1 , Fa2, Fa3, Fa4, FaArrowLeft, FaArrowRight, FaPencil} from "react-icons/fa6";
-import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { useParams } from "next/navigation";
 
 interface FormValues {
   name?: string;
@@ -59,23 +59,22 @@ const StudentDashboard = () => {
   const [activeTab, setActiveTab] = useState(1);
   const [isEditing, setIsEditing] = useState(false);
   const [formValues, setFormValues] = useState<FormValues>({});
-  const [loading, setLoading] = useState(false);
-  const session = useSession();
+    const [loading, setLoading] = useState(false);
+    const params = useParams<{ id: string }>();
   useEffect(() => {
     setLoading(true);
-    if (!session) return;
-    if (session.status === "loading") return;
+    if (!params) return;
     const fetchData = async () => {
       // Fetch student data from localStorage
-      const studId = session.data?.user.id;
-      const res = await fetch(`http://localhost:8080/students/${studId}`);
+      const studId = params.id;
+      const res = await fetch(`http://localhost:8080/students/srNo/${studId}`);
       const data = await res.json();
       setFormValues(data);
     };
 
     fetchData();
     setLoading(false);
-  }, [session]);
+  }, []);
 
   const handleChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
@@ -102,9 +101,9 @@ const StudentDashboard = () => {
       //   formValues
       // );
       setLoading(true);
-      const studId = session.data?.user.id;
+      const studId = params.id;
 
-      const res = await fetch(`http://localhost:8080/students/${studId}`, {
+      const res = await fetch(`http://localhost:8080/students/srNo/${studId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
