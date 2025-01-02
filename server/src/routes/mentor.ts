@@ -31,7 +31,6 @@ const mentRouter = Router();
 mentRouter.get("/mentors", getMentors);
 
 //fetch by empId
-//@ts-expect-error
 mentRouter.get("/mentors/empId/:empId", getMentorByEmpId);
 
 /**
@@ -88,7 +87,6 @@ mentRouter.post("/mentors", createMentor);
  *       400:
  *         description: Bad request
  */
-//@ts-expect-error
 mentRouter.put("/mentors/:id", updateMentor);
 
 /**
@@ -109,7 +107,6 @@ mentRouter.put("/mentors/:id", updateMentor);
  *       404:
  *         description: Mentor not found
  */
-//@ts-expect-error
 mentRouter.delete("/mentors/:id", deleteMentor);
 
 // add student to mentor
@@ -148,7 +145,6 @@ mentRouter.delete("/mentors/:id", deleteMentor);
  *       400:
  *         description: Bad request
  */
-//@ts-expect-error
 mentRouter.put("/mentors/addStudent/:id", addStudent);
 
 // get students of a mentor
@@ -177,7 +173,6 @@ mentRouter.put("/mentors/addStudent/:id", addStudent);
  *       404:
  *         description: Mentor not found
  */
-//@ts-expect-error
 mentRouter.get("/mentors/students/:id", getStudents);
 
 // login mentor
@@ -212,7 +207,6 @@ mentRouter.get("/mentors/students/:id", getStudents);
  *       400:
  *         description: Bad request
  */
-//@ts-expect-error
 mentRouter.post("/mentors/login", loginMentor);
 
 // update mentor password
@@ -254,7 +248,6 @@ mentRouter.post("/mentors/login", loginMentor);
  *       400:
  *         description: Bad request
  */
-//@ts-expect-error
 mentRouter.put("/mentors/updatePassword/:id", updatePassword);
 
 export default mentRouter;

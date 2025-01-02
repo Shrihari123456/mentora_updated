@@ -2,7 +2,8 @@
   "name": "server",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "seed": "bun run src/utils/seed.ts"
+    "seed": "bun run src/utils/seed.ts",
+    "start": "bun run src/index.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

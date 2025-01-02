@@ -26,7 +26,9 @@ const ViewAllStudents: React.FC = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const response = await fetch("http://localhost:8080/students");
+        const response = await fetch(
+          "https://student-mentoring-server.onrender.com/students"
+        );
         if (!response.ok) {
           throw new Error("Error fetching students!");
         }

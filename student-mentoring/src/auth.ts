@@ -27,25 +27,31 @@ declare module "next-auth/jwt" {
 async function getUserFromDb({ userid, password, role }: AuthPayload) {
   try {
     if (role === "student") {
-      const res = await fetch("http://localhost:8080/students/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ srNo: userid, password }),
-      });
+      const res = await fetch(
+        "https://student-mentoring-server.onrender.com/students/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ srNo: userid, password }),
+        }
+      );
       if (res.ok) {
         const stud = await res.json();
         return { ...stud, role: "student", userid: stud.srNo, id: stud._id };
       }
     } else if (role === "mentor") {
-      const res = await fetch("http://localhost:8080/mentors/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ empId: userid, password }),
-      });
+      const res = await fetch(
+        "https://student-mentoring-server.onrender.com/mentors/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ empId: userid, password }),
+        }
+      );
       if (res.ok) {
         const mentor = await res.json();
         return {

@@ -1,7 +1,6 @@
 import axios from "axios";
 import { useState, useEffect } from "react";
 
-
 const StudentMentoringRecord = () => {
   const [student, setStudent] = useState<Student>({} as Student);
 
@@ -9,7 +8,7 @@ const StudentMentoringRecord = () => {
     try {
       console.log(studentId);
       const res = await axios.get(
-        `http://localhost:8080/students/srNo/${studentId}`
+        `https://student-mentoring-server.onrender.com/students/srNo/${studentId}`
       );
       console.log(res.data);
       setStudent(res.data);

@@ -5,7 +5,7 @@ import Mentor from "../models/mentor";
 import Student from "../models/student";
 
 // Get all mentors
-export const getMentors = async (req: Request, res: Response) => {
+export const getMentors = async (req: Request, res: Response): Promise<any> => {
   try {
     const mentors = await Mentor.find();
     res.status(200).json(mentors);
@@ -20,7 +20,7 @@ export const getMentorByEmpId = async (
     empId: string;
   }>,
   res: Response
-) => {
+): Promise<any> => {
   try {
     const mentor = await Mentor.findOne({ empId: req.params.empId });
     if (!mentor) {
@@ -33,7 +33,10 @@ export const getMentorByEmpId = async (
 };
 
 // Create a new mentor
-export const createMentor = async (req: Request, res: Response) => {
+export const createMentor = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   const mentor = new Mentor(req.body);
   try {
     const newMentor = await mentor.save();
@@ -44,7 +47,10 @@ export const createMentor = async (req: Request, res: Response) => {
 };
 
 // Update a mentor by ID
-export const updateMentor = async (req: Request, res: Response) => {
+export const updateMentor = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const mentor = await Mentor.findByIdAndUpdate(req.params.id, req.body);
     if (!mentor) {
@@ -57,7 +63,10 @@ export const updateMentor = async (req: Request, res: Response) => {
 };
 
 // Delete a mentor by ID
-export const deleteMentor = async (req: Request, res: Response) => {
+export const deleteMentor = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const mentor = await Mentor.findByIdAndDelete(req.params.id);
     if (!mentor) {
@@ -70,7 +79,7 @@ export const deleteMentor = async (req: Request, res: Response) => {
 };
 
 // Add a student to a mentor
-export const addStudent = async (req: Request, res: Response) => {
+export const addStudent = async (req: Request, res: Response): Promise<any> => {
   try {
     const mentor = await Mentor.findById(req.params.id);
     if (!mentor) {
@@ -95,7 +104,10 @@ export const addStudent = async (req: Request, res: Response) => {
 };
 
 // get students of a mentor
-export const getStudents = async (req: Request, res: Response) => {
+export const getStudents = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const mentor = await Mentor.findById(req.params.id);
     const students = await Student.find({ mentor: mentor?._id }).populate(
@@ -112,7 +124,10 @@ export const getStudents = async (req: Request, res: Response) => {
 
 // Login mentor
 
-export const loginMentor = async (req: Request, res: Response) => {
+export const loginMentor = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const mentor = await Mentor.findOne({ empId: req.body.empId });
     if (!mentor) {
@@ -130,7 +145,10 @@ export const loginMentor = async (req: Request, res: Response) => {
 
 // update mentor password
 
-export const updatePassword = async (req: Request, res: Response) => {
+export const updatePassword = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const mentor = await Mentor.findById(req.params.id);
     if (!mentor) {

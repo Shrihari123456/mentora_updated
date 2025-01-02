@@ -40,11 +40,14 @@ const LoginScreen: React.FC = () => {
     mutationFn: async (data: LoginFormValues) => {
       const endpoint =
         data.role === "mentor" ? "/mentors/login" : "/students/login";
-      const response = await axios.post(`http://localhost:8080${endpoint}`, {
-        empId: data.role === "mentor" ? data.id : undefined,
-        srNo: data.role === "student" ? data.id : undefined,
-        password: data.password,
-      });
+      const response = await axios.post(
+        `https://student-mentoring-server.onrender.com${endpoint}`,
+        {
+          empId: data.role === "mentor" ? data.id : undefined,
+          srNo: data.role === "student" ? data.id : undefined,
+          password: data.password,
+        }
+      );
       return response.data;
     },
     onSuccess: (data, variables) => {

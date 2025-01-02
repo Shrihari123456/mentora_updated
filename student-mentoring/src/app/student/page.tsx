@@ -10,7 +10,15 @@ import {
   CircularProgress,
   Paper,
 } from "@mui/material";
-import { Fa1 , Fa2, Fa3, Fa4, FaArrowLeft, FaArrowRight, FaPencil} from "react-icons/fa6";
+import {
+  Fa1,
+  Fa2,
+  Fa3,
+  Fa4,
+  FaArrowLeft,
+  FaArrowRight,
+  FaPencil,
+} from "react-icons/fa6";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
@@ -68,7 +76,9 @@ const StudentDashboard = () => {
     const fetchData = async () => {
       // Fetch student data from localStorage
       const studId = session.data?.user.id;
-      const res = await fetch(`http://localhost:8080/students/${studId}`);
+      const res = await fetch(
+        `https://student-mentoring-server.onrender.com/students/${studId}`
+      );
       const data = await res.json();
       setFormValues(data);
     };
@@ -80,12 +90,12 @@ const StudentDashboard = () => {
   const handleChangeTab = (_event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);
   };
-  const handleTabButtonClick = (newValue: number) => { 
+  const handleTabButtonClick = (newValue: number) => {
     setActiveTab(newValue);
-  }
+  };
   const handleEditControl = () => {
     setIsEditing((prev) => !prev);
-  }
+  };
 
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target;
@@ -98,19 +108,22 @@ const StudentDashboard = () => {
   const handleSave = async () => {
     try {
       // const response = await axios.put(
-      //   `http://localhost:8080/students/${studID}`,
+      //   `https://student-mentoring-server.onrender.com/students/${studID}`,
       //   formValues
       // );
       setLoading(true);
       const studId = session.data?.user.id;
 
-      const res = await fetch(`http://localhost:8080/students/${studId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formValues),
-      });
+      const res = await fetch(
+        `https://student-mentoring-server.onrender.com/students/${studId}`,
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formValues),
+        }
+      );
       const data = await res.json();
       console.log("Student data updated successfully:", data);
       setLoading(false);
@@ -229,39 +242,49 @@ const StudentDashboard = () => {
             },
           }}
         >
-            <Button
+          <Button
             onClick={() => handleTabButtonClick(activeTab - 1)}
             endIcon={<FaArrowLeft />}
             disabled={activeTab === 1}
-            />
-            {[
+          />
+          {[
             { icon: <Fa1 />, label: "Personal Details" },
             { icon: <Fa2 />, label: "Parents" },
             { icon: <Fa3 />, label: "Academic Profile" },
             { icon: <Fa4 />, label: "Achievements" },
-            ].map((tab, index) => (
+          ].map((tab, index) => (
             <Tab key={index} icon={tab.icon} label={tab.label} />
-            ))}
-            <Button
+          ))}
+          <Button
             onClick={() => handleTabButtonClick(activeTab + 1)}
             endIcon={<FaArrowRight />}
             disabled={activeTab === 4}
-            />
+          />
         </Tabs>
 
         {activeTab === 1 && (
           <Box sx={{ px: 2, mb: 3 }}>
-            <Box 
-      sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
-      >
-        Personal Information
-      </Typography>
-              <Button endIcon={<FaPencil />} onClick={handleEditControl} disabled={isEditing}>Edit</Button>
-    </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
+              >
+                Personal Information
+              </Typography>
+              <Button
+                endIcon={<FaPencil />}
+                onClick={handleEditControl}
+                disabled={isEditing}
+              >
+                Edit
+              </Button>
+            </Box>
             {[
               { label: "Name", field: "name" },
               { label: "Admission Year", field: "admissionYear" },
@@ -275,8 +298,8 @@ const StudentDashboard = () => {
               { label: "Blood Group", field: "bloodGroup" },
               { label: "Resident Type", field: "residentType" },
             ].map(({ label, field, type = "text" }) => (
-              <TextField 
-disabled = {!isEditing}
+              <TextField
+                disabled={!isEditing}
                 key={field}
                 label={label}
                 name={field}
@@ -295,9 +318,8 @@ disabled = {!isEditing}
               />
             ))}
 
-            <TextField 
-disabled = {!isEditing}
-              
+            <TextField
+              disabled={!isEditing}
               label="Phone"
               name="phone"
               value={formValues.phone || ""}
@@ -305,8 +327,8 @@ disabled = {!isEditing}
               fullWidth
               sx={{ mb: 2 }}
             />
-            <TextField 
-disabled = {!isEditing}
+            <TextField
+              disabled={!isEditing}
               label="Email"
               name="email"
               value={formValues.email || ""}
@@ -319,17 +341,27 @@ disabled = {!isEditing}
 
         {activeTab === 2 && (
           <Box sx={{ px: 2, mb: 3 }}>
-            <Box 
-      sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
-      >
-        Parent Information
-      </Typography>
-      <Button endIcon={<FaPencil />} onClick={handleEditControl} disabled={isEditing}>Edit</Button>
-    </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
+              >
+                Parent Information
+              </Typography>
+              <Button
+                endIcon={<FaPencil />}
+                onClick={handleEditControl}
+                disabled={isEditing}
+              >
+                Edit
+              </Button>
+            </Box>
             {["father", "mother"].map((parent) => (
               <Box key={parent} sx={{ mb: 3 }}>
                 <Typography
@@ -346,8 +378,10 @@ disabled = {!isEditing}
                   "phone",
                   "email",
                 ].map((field) => (
-                  <TextField 
-disabled = {!isEditing || (field === "email" || field === "phone")}
+                  <TextField
+                    disabled={
+                      !isEditing || field === "email" || field === "phone"
+                    }
                     key={field}
                     label={field.charAt(0).toUpperCase() + field.slice(1)}
                     value={
@@ -372,7 +406,6 @@ disabled = {!isEditing || (field === "email" || field === "phone")}
                     variant="outlined"
                     fullWidth
                     sx={{ mb: 2 }}
-                    
                   />
                 ))}
               </Box>
@@ -382,17 +415,27 @@ disabled = {!isEditing || (field === "email" || field === "phone")}
 
         {activeTab === 3 && (
           <Box sx={{ px: 2, mb: 3 }}>
-            <Box 
-      sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
-      >
-        Academic Profile
-      </Typography>
-      <Button endIcon={<FaPencil />} onClick={handleEditControl} disabled={isEditing}>Edit</Button>
-    </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
+              >
+                Academic Profile
+              </Typography>
+              <Button
+                endIcon={<FaPencil />}
+                onClick={handleEditControl}
+                disabled={isEditing}
+              >
+                Edit
+              </Button>
+            </Box>
             {[
               {
                 label: "Previous Institution",
@@ -401,8 +444,8 @@ disabled = {!isEditing || (field === "email" || field === "phone")}
               { label: "Previous Course", field: "previousCourse" },
               { label: "Medium of Instruction", field: "mediumOfInstruction" },
             ].map(({ label, field }) => (
-              <TextField 
-disabled = {!isEditing}
+              <TextField
+                disabled={!isEditing}
                 key={field}
                 label={label}
                 name={field}
@@ -418,24 +461,34 @@ disabled = {!isEditing}
 
         {activeTab === 4 && (
           <Box sx={{ px: 2, mb: 3 }}>
-            <Box 
-      sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}
-    >
-      <Typography
-        variant="h6"
-        sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
-      >
-        Acheivements
-      </Typography>
-      <Button endIcon={<FaPencil />} onClick={handleEditControl} disabled={isEditing}>Edit</Button>
-    </Box>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+              }}
+            >
+              <Typography
+                variant="h6"
+                sx={{ mb: 0, fontWeight: 600, color: "#3f51b5" }}
+              >
+                Acheivements
+              </Typography>
+              <Button
+                endIcon={<FaPencil />}
+                onClick={handleEditControl}
+                disabled={isEditing}
+              >
+                Edit
+              </Button>
+            </Box>
             {formValues.achievements && formValues.achievements.length > 0 ? (
               formValues.achievements.map((achievement, index) => (
                 <Box key={index} sx={{ mb: 3 }}>
                   {["domain", "activity", "prizeDetails", "institution"].map(
                     (field) => (
-                      <TextField 
-disabled = {!isEditing}
+                      <TextField
+                        disabled={!isEditing}
                         key={field}
                         label={field.charAt(0).toUpperCase() + field.slice(1)}
                         value={
@@ -498,7 +551,10 @@ disabled = {!isEditing}
           </Box>
         )}
 
-        <Box sx={{ textAlign: "center", mt: 4 }} display={isEditing ? "block" : "none"}>
+        <Box
+          sx={{ textAlign: "center", mt: 4 }}
+          display={isEditing ? "block" : "none"}
+        >
           <Button
             variant="contained"
             color="primary"
@@ -508,11 +564,9 @@ disabled = {!isEditing}
               padding: "8px 24px",
               fontWeight: 500,
             }}
-            
           >
             Save
           </Button>
-          
         </Box>
       </Box>
     </Box>

@@ -35,7 +35,7 @@ const AssignMentees: React.FC = () => {
     queryKey: ["unassignedStudents"],
     queryFn: async () => {
       const response = await axios.get(
-        "http://localhost:8080/students-unassigned"
+        "https://student-mentoring-server.onrender.com/students-unassigned"
       );
       return response.data;
     },
@@ -44,9 +44,12 @@ const AssignMentees: React.FC = () => {
   // Assign student mutation
   const { mutate, isPending } = useMutation({
     mutationFn: async (studentId: string) => {
-      return axios.put(`http://localhost:8080/mentors/addStudent/${mentorId}`, {
-        studentId,
-      });
+      return axios.put(
+        `https://student-mentoring-server.onrender.com/mentors/addStudent/${mentorId}`,
+        {
+          studentId,
+        }
+      );
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

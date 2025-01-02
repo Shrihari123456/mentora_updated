@@ -2,7 +2,10 @@ import { Request, Response } from "express";
 import Student from "../models/student";
 
 // Get all students
-export const getStudents = async (req: Request, res: Response) => {
+export const getStudents = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const students = await Student.find().populate("mentor", "name");
     res.status(200).json(students);
@@ -12,7 +15,10 @@ export const getStudents = async (req: Request, res: Response) => {
 };
 
 // Get a single student by ID
-export const getStudentById = async (req: Request, res: Response) => {
+export const getStudentById = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const student = await Student.findById(req.params.id).populate(
       "mentor",
@@ -28,7 +34,10 @@ export const getStudentById = async (req: Request, res: Response) => {
 };
 
 //fetch by srNo
-export const getStudentBySrNo = async (req: Request, res: Response) => {
+export const getStudentBySrNo = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const student = await Student.findOne({ srNo: req.params.srNo });
     if (!student) {
@@ -41,7 +50,10 @@ export const getStudentBySrNo = async (req: Request, res: Response) => {
 };
 
 // fetch by usn
-export const getStudentByUsn = async (req: Request, res: Response) => {
+export const getStudentByUsn = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const student = await Student.findOne({ usn: req.params.usn });
     if (!student) {
@@ -54,7 +66,10 @@ export const getStudentByUsn = async (req: Request, res: Response) => {
 };
 
 //get all unassigned students
-export const getUnassignedStudents = async (req: Request, res: Response) => {
+export const getUnassignedStudents = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const students = await Student.find({
       mentor: { $exists: false },
@@ -67,7 +82,10 @@ export const getUnassignedStudents = async (req: Request, res: Response) => {
 };
 
 // Create a new student
-export const createStudent = async (req: Request, res: Response) => {
+export const createStudent = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   const student = new Student(req.body);
   try {
     const newStudent = await student.save();
@@ -78,7 +96,10 @@ export const createStudent = async (req: Request, res: Response) => {
 };
 
 // Update a student by ID
-export const updateStudent = async (req: Request, res: Response) => {
+export const updateStudent = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const updatedStudent = await Student.findByIdAndUpdate(
       req.params.id,
@@ -94,7 +115,10 @@ export const updateStudent = async (req: Request, res: Response) => {
   }
 };
 
-export const updateStudentBySrNo = async (req: Request, res: Response) => {
+export const updateStudentBySrNo = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const updatedStudent = await Student.findOneAndUpdate(
       { srNo: req.params.srNo },
@@ -111,7 +135,10 @@ export const updateStudentBySrNo = async (req: Request, res: Response) => {
 };
 
 // Delete a student by ID
-export const deleteStudent = async (req: Request, res: Response) => {
+export const deleteStudent = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const deletedStudent = await Student.findByIdAndDelete(req.params.id);
     if (!deletedStudent) {
@@ -124,7 +151,10 @@ export const deleteStudent = async (req: Request, res: Response) => {
 };
 
 // login student
-export const loginStudent = async (req: Request, res: Response) => {
+export const loginStudent = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const student = await Student.findOne({ srNo: req.body.srNo });
     if (!student) {
@@ -145,7 +175,10 @@ export const loginStudent = async (req: Request, res: Response) => {
 
 // update student password
 
-export const updateStudentPassword = async (req: Request, res: Response) => {
+export const updateStudentPassword = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) {

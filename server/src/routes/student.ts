@@ -57,17 +57,15 @@ studRouter.get("/students-unassigned", getUnassignedStudents);
  *       404:
  *         description: Student not found
  */
-//@ts-expect-error
+
 studRouter.get("/students/:id", getStudentById);
 
 //fetch by srNo
 
-//@ts-expect-error
 studRouter.get("/students/srNo/:srNo", getStudentBySrNo);
 
 //fetch by usn
 
-//@ts-expect-error
 studRouter.get("/students/usn/:usn", getStudentByUsn);
 
 /**
@@ -123,12 +121,10 @@ studRouter.post("/students", createStudent);
  *       400:
  *         description: Bad request
  */
-//@ts-expect-error
+
 studRouter.put("/students/:id", updateStudent);
 
-
 studRouter.put("/students/srNo/:srNo", updateStudentBySrNo);
-
 
 /**
  * @swagger
@@ -148,17 +144,15 @@ studRouter.put("/students/srNo/:srNo", updateStudentBySrNo);
  *       404:
  *         description: Student not found
  */
-//@ts-expect-error
+
 studRouter.delete("/students/:id", deleteStudent);
 
 // login student
 
-//@ts-expect-error
 studRouter.post("/students/login", loginStudent);
 
 // update password
 
-//@ts-expect-error
 studRouter.put("/students/password/:id", updateStudentPassword);
 
 export default studRouter;

@@ -26,7 +26,7 @@ const MentorProfile: React.FC = () => {
     queryFn: async () => {
       if (!auth?.userDetails?._id) throw new Error("No mentor ID found");
       const response = await axios.get(
-        `http://localhost:8080/mentors/empID/${auth.userDetails.empId}`
+        `https://student-mentoring-server.onrender.com/mentors/empID/${auth.userDetails.empId}`
       );
       return response.data;
     },

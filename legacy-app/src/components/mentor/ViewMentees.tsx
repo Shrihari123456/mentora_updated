@@ -35,7 +35,7 @@ const ViewMentees: React.FC = () => {
       if (!auth?.userDetails?._id) throw new Error("No mentor ID found");
 
       const response = await axios.get(
-        `http://localhost:8080/mentors/students/${auth.userDetails._id}`
+        `https://student-mentoring-server.onrender.com/mentors/students/${auth.userDetails._id}`
       );
       return response.data;
     },

@@ -9,7 +9,7 @@ export default async function MentorProfile() {
   }
 
   const res = await fetch(
-    `http://localhost:8080/mentors/empId/${session.user.userid}`
+    `https://student-mentoring-server.onrender.com/mentors/empId/${session.user.userid}`
   );
 
   if (!res.ok) {

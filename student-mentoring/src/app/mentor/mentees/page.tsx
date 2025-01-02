@@ -26,7 +26,9 @@ const ViewMentees: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [mentees, setMentees] = useState<Student[] | null>(null);
-  const [filteredMentees, setFilteredMentees] = useState<Student[] | null>(null);
+  const [filteredMentees, setFilteredMentees] = useState<Student[] | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -39,7 +41,7 @@ const ViewMentees: React.FC = () => {
       if (!session.data?.user.id) return;
       try {
         const response = await fetch(
-          `http://localhost:8080/mentors/students/${session.data?.user.id}`
+          `https://student-mentoring-server.onrender.com/mentors/students/${session.data?.user.id}`
         );
         if (!response.ok) {
           throw new Error("Failed to fetch mentees");
@@ -59,9 +61,10 @@ const ViewMentees: React.FC = () => {
 
   useEffect(() => {
     if (mentees) {
-      const filtered = mentees.filter((student) =>
-        student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        student.srNo.toString().includes(searchTerm)
+      const filtered = mentees.filter(
+        (student) =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.srNo.toString().includes(searchTerm)
       );
       setFilteredMentees(filtered);
     }
@@ -523,16 +526,18 @@ const ViewMentees: React.FC = () => {
           >
             Download Mentee Details (PDF)
           </Button>
-          <Link passHref href={`/mentor/student-edit/${selectedStudent?.srNo}`} >
-          <Button variant="contained"
-            color="primary"
-            sx={{
-              textTransform: "none",
-              padding: "8px 24px",
-              fontWeight: 500,
-              ml: 2,
-            }}>
-            Edit
+          <Link passHref href={`/mentor/student-edit/${selectedStudent?.srNo}`}>
+            <Button
+              variant="contained"
+              color="primary"
+              sx={{
+                textTransform: "none",
+                padding: "8px 24px",
+                fontWeight: 500,
+                ml: 2,
+              }}
+            >
+              Edit
             </Button>
           </Link>
         </Box>

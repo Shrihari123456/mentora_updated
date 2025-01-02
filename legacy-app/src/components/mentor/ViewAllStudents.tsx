@@ -15,8 +15,6 @@ import {
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
-
-
 const ViewAllStudents: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -29,7 +27,9 @@ const ViewAllStudents: React.FC = () => {
   } = useQuery<Student[]>({
     queryKey: ["students"],
     queryFn: async () => {
-      const response = await axios.get("http://localhost:8080/students");
+      const response = await axios.get(
+        "https://student-mentoring-server.onrender.com/students"
+      );
       return response.data;
     },
   });
