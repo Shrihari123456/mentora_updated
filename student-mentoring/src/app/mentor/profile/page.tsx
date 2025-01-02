@@ -1,5 +1,15 @@
 import { auth, signOut } from "@/auth";
-import { Box, Typography, Grid, TextField, Paper, Button } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Grid,
+  TextField,
+  Paper,
+  Button,
+  IconButton,
+} from "@mui/material";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { redirect } from "next/navigation";
 
 export default async function MentorProfile() {
   const session = await auth();
@@ -52,6 +62,29 @@ export default async function MentorProfile() {
       {/*
         Logout Button
       */}
+      <form
+        action={async () => {
+          "use server";
+          redirect("/mentor");
+        }}
+      >
+        <IconButton
+          type="submit" // Define this function for navigation logic
+          sx={{
+            position: "absolute", // Positioning at the top left
+            top: 16, // Slight margin from top
+            left: 16, // Slight margin from left
+            color: "#3f51b5", // Match the theme
+            backgroundColor: "#ffffff",
+            boxShadow: 2,
+            "&:hover": {
+              backgroundColor: "#f0f0f0", // Slight hover effect
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
+      </form>
       <Paper
         elevation={5}
         sx={{

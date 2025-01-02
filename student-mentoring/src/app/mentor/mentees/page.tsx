@@ -14,12 +14,15 @@ import {
   Button,
   CircularProgress,
   TextField,
+  IconButton,
 } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
 import MenteeReport from "./menteeReport";
 import { compile } from "@fileforge/react-print";
 import { useSession } from "next-auth/react";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { useRouter } from "next/navigation";
 
 const ViewMentees: React.FC = () => {
   const [openDialog, setOpenDialog] = useState(false);
@@ -33,6 +36,7 @@ const ViewMentees: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const session = useSession();
+  const router = useRouter();
 
   useEffect(() => {
     const fetchMentees = async () => {
@@ -118,6 +122,24 @@ const ViewMentees: React.FC = () => {
           bgcolor: "background.default",
         }}
       >
+        <IconButton
+          onClick={() => {
+            router.back();
+          }} // Define this function for navigation logic
+          sx={{
+            position: "absolute", // Positioning at the top left
+            top: 16, // Slight margin from top
+            left: 16, // Slight margin from left
+            color: "#3f51b5", // Match the theme
+            backgroundColor: "#ffffff",
+            boxShadow: 2,
+            "&:hover": {
+              backgroundColor: "#f0f0f0", // Slight hover effect
+            },
+          }}
+        >
+          <ArrowBackIcon />
+        </IconButton>
         <Typography
           align="center"
           variant="h5"
@@ -141,6 +163,24 @@ const ViewMentees: React.FC = () => {
 
   return (
     <Box sx={{ padding: 3, bgcolor: "#f4f5f7", minHeight: "100vh" }}>
+      <IconButton
+        onClick={() => {
+          router.back();
+        }} // Define this function for navigation logic
+        sx={{
+          position: "absolute", // Positioning at the top left
+          top: 16, // Slight margin from top
+          left: 16, // Slight margin from left
+          color: "#3f51b5", // Match the theme
+          backgroundColor: "#ffffff",
+          boxShadow: 2,
+          "&:hover": {
+            backgroundColor: "#f0f0f0", // Slight hover effect
+          },
+        }}
+      >
+        <ArrowBackIcon />
+      </IconButton>
       <Typography
         variant="h4"
         align="center"
