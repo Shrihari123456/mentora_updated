@@ -13,6 +13,7 @@ import {
   Button,
   CircularProgress,
   IconButton,
+  TextField,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import Image from "next/image";
@@ -23,6 +24,10 @@ const ViewAllStudents: React.FC = () => {
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [activeTab, setActiveTab] = useState(0);
   const [students, setStudents] = useState<Student[]>([]);
+  const [filteredStudents, setFilteredStudents] = useState<Student[] | null>(
+    null
+  );
+  const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -46,6 +51,20 @@ const ViewAllStudents: React.FC = () => {
 
     fetchStudents();
   }, []);
+
+  useEffect(() => {
+    if (students) {
+      const filtered = students.filter(
+        (student) =>
+          student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          student.srNo
+            .toLowerCase()
+            .toString()
+            .includes(searchTerm.toLowerCase())
+      );
+      setFilteredStudents(filtered);
+    }
+  }, [searchTerm, students]);
 
   const handleOpenDialog = (student: Student) => {
     setSelectedStudent(student);
@@ -131,10 +150,23 @@ const ViewAllStudents: React.FC = () => {
       >
         Click on any of the cards below to view student details.
       </Typography>
-      {students?.length ? (
+
+      <Box sx={{ mb: 4, textAlign: "center" }}>
+        <TextField
+          variant="outlined"
+          label="Search Mentees"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          sx={{
+            width: "100%",
+            maxWidth: 400,
+          }}
+        />
+      </Box>
+      {filteredStudents && filteredStudents.length ? (
         <Grid container spacing={3}>
-          {students.map((student) => (
-            <Grid item xs={12} sm={6} md={4} key={student.srNo}>
+          {filteredStudents.map((student, index) => (
+            <Grid item xs={12} sm={6} md={4} key={index}>
               <Paper
                 sx={{
                   padding: 3,
