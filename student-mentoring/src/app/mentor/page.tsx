@@ -4,14 +4,15 @@ import React from "react";
 import ListAltIcon from "@mui/icons-material/ListAlt"; // For "View All Students"
 import GroupIcon from "@mui/icons-material/Group"; // For "View Mentees"
 import PersonIcon from "@mui/icons-material/Person"; // For "Mentor Profile"
+import { auth } from "@/auth";
 
-const Page = () => {
+const Page = async () => {
   // Reusable icon style for better consistency
   const iconStyle = {
     fontSize: 40,
     color: "#3f51b5", // Primary color for icons
   };
-
+  const session = await auth();
   const cardData = [
     {
       title: "Explore the Full Student Directory",
@@ -27,8 +28,8 @@ const Page = () => {
       icon: <GroupIcon sx={iconStyle} />, // Consistent icon style
     },
     {
-      title: "Edit Your Mentor Profile",
-      description: "Update your profile details and areas of expertise.",
+      title: "View Your Mentor Profile",
+      description: "View your personal details",
       path: "/mentor/profile",
       icon: <PersonIcon sx={iconStyle} />, // Consistent icon style
     },
@@ -54,7 +55,7 @@ const Page = () => {
           mb: 1, // Reduced margin to bring subtitle closer
         }}
       >
-        Welcome to Your Dashboard, Mentor!
+        Welcome to Your Dashboard, {session?.user.name || "Mentor"}!
       </Typography>
 
       {/* Subtitle */}

@@ -262,7 +262,6 @@ const MentorAssignment: React.FC = () => {
                       if (Number.parseInt(noofStudentsToBeAssigned) > 0) {
                         fetchStudents();
                         setSelectedStudents([]);
-                        setNoofStudentsToBeAssigned("");
                       } else {
                         alert(
                           "Please enter a valid number of students to be assigned."
