@@ -68,7 +68,10 @@ const ViewMentees: React.FC = () => {
       const filtered = mentees.filter(
         (student) =>
           student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.srNo.toLowerCase().toString().includes(searchTerm.toLowerCase())
+          student.srNo
+            .toLowerCase()
+            .toString()
+            .includes(searchTerm.toLowerCase())
       );
       setFilteredMentees(filtered);
     }
@@ -401,6 +404,7 @@ const ViewMentees: React.FC = () => {
                       className="m-auto"
                       width={150}
                       height={150}
+                      unoptimized={true}
                     />
                   </div>
                 </Box>

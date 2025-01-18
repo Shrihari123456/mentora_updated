@@ -21,6 +21,7 @@ import {
 } from "react-icons/fa6";
 import { useSession } from "next-auth/react";
 import { toast } from "sonner";
+import { signout } from "./actions";
 
 interface FormValues {
   name?: string;
@@ -203,6 +204,16 @@ const StudentDashboard = () => {
         background: "linear-gradient(135deg, #e3f2fd, #bbdefb)",
       }}
     >
+      <form
+        action={async () => {
+          await signout();
+        }}
+      >
+        <Button variant="outlined" type="submit">
+          Logout
+        </Button>
+      </form>
+
       <Box
         sx={{
           maxWidth: "800px",

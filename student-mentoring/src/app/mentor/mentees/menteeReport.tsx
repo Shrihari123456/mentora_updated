@@ -93,6 +93,7 @@ function MenteeReport({ student }: { student: Student }) {
                 alt="JSSSTU Logo"
                 width={300}
                 height={150}
+                unoptimized={true}
               />
             </td>
           </tr>

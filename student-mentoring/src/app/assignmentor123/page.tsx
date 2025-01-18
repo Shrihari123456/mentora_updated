@@ -78,13 +78,16 @@ const MentorAssignment: React.FC = () => {
 
     try {
       const requests = selectedStudents.map((studentId) =>
-        fetch(`http://localhost:8080/mentors/addStudent/${selectedMentor}`, {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ studentId }),
-        })
+        fetch(
+          `https://student-mentoring-server.onrender.com/mentors/addStudent/${selectedMentor}`,
+          {
+            method: "PUT",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ studentId }),
+          }
+        )
       );
 
       const responses = await Promise.all(requests);

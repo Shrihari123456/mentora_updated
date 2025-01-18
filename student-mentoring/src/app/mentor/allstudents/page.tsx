@@ -355,6 +355,7 @@ const ViewAllStudents: React.FC = () => {
                       className="m-auto"
                       width={150}
                       height={150}
+                        unoptimized={true}
                     />
                   </div>
                 </Box>
