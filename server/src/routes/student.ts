@@ -32,7 +32,33 @@ const studRouter = Router();
  */
 studRouter.get("/students", getStudents);
 //get all unassigned students
-
+/**@swagger
+ * /students-unassigned:
+ *   get:
+ *     summary: Retrieve a list of unassigned students
+ *     parameters:
+ *       - in: query
+ *         name: admissionYear
+ *         schema:
+ *           type: string
+ *         description: The admission year of the student
+ *       - in: query
+ *         name: section
+ *         schema:
+ *           type: string
+ *         description: The section of the student
+ *     responses:
+ *       200:
+ *         description: A list of unassigned students
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Student'
+ *       404:
+ *         description: No unassigned students found
+ */
 studRouter.get("/students-unassigned", getUnassignedStudents);
 
 /**

@@ -71,10 +71,41 @@ export const getUnassignedStudents = async (
   res: Response
 ): Promise<any> => {
   try {
-    const students = await Student.find({
-      mentor: { $exists: false },
-    });
-    res.status(200).json(students);
+    const admissionYear = req.query.admissionYear as string | undefined;
+    const section = req.query.section as string | undefined;
+    if (admissionYear && section) {
+      const students = await Student.find({
+        mentor: null,
+        admissionYear: admissionYear,
+        section: section,
+      });
+      console.log(students);
+      if (students.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No unassigned students found" });
+      }
+      return res.status(200).json(students);
+    } else if (admissionYear) {
+      const students = await Student.find({
+        mentor: { $exists: false },
+        admissionYear,
+      });
+      if (students.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No unassigned students found" });
+      }
+      return res.status(200).json(students);
+    } else {
+      const students = await Student.find({ mentor: { $exists: false } });
+      if (students.length === 0) {
+        return res
+          .status(404)
+          .json({ message: "No unassigned students found" });
+      }
+      return res.status(200).json(students);
+    }
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: (error as Error).message });

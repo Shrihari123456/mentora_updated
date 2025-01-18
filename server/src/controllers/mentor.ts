@@ -82,9 +82,11 @@ export const deleteMentor = async (
 export const addStudent = async (req: Request, res: Response): Promise<any> => {
   try {
     const mentor = await Mentor.findById(req.params.id);
+
     if (!mentor) {
       return res.status(404).json({ message: "Mentor not found" });
     }
+
     mentor.students.push(req.body.studentId);
     //save on student side as well
     const student = await Student.findById(req.body.studentId);
@@ -95,7 +97,7 @@ export const addStudent = async (req: Request, res: Response): Promise<any> => {
     //@ts-expect-error
     student.mentor = mentor._id;
 
-    await student.save();
+    await student.save({ validateBeforeSave: false });
     await mentor.save();
     res.status(200).json(mentor);
   } catch (error) {

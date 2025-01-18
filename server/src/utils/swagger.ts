@@ -10,11 +10,11 @@ const options = {
       version: "1.0.0",
       description: "API documentation for the Student management system",
     },
-    servers: [
-      {
-        url: "https://student-mentoring-server.onrender.com",
-      },
-    ],
+    // servers: [
+    //   {
+    //     url: "https://student-mentoring-server.onrender.com",
+    //   },
+    // ],
   },
   apis: ["./src/routes/*.ts", "./src/models/*.ts"], // Paths to files containing OpenAPI definitions
 };
