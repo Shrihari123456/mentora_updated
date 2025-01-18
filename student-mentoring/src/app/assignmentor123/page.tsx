@@ -12,15 +12,20 @@ import {
   FormControl,
   InputLabel,
   Checkbox,
-  List,
-  ListItem,
-  ListItemText,
   Button,
   CircularProgress,
   Alert,
   Paper,
   Box,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
 } from "@mui/material";
+import { set } from "zod";
 
 interface Mentor {
   _id: string;
@@ -34,6 +39,7 @@ interface Student {
   admissionYear: string;
   section: string;
   srNo: string;
+  usn?: string;
 }
 
 const MentorAssignment: React.FC = () => {
@@ -41,6 +47,8 @@ const MentorAssignment: React.FC = () => {
   const [selectedMentor, setSelectedMentor] = useState<string | null>(null);
   const [admissionYear, setAdmissionYear] = useState<string>("");
   const [section, setSection] = useState<string>("");
+  const [noofStudentsToBeAssigned, setNoofStudentsToBeAssigned] =
+    useState<string>("");
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [loadingMentors, setLoadingMentors] = useState<boolean>(true);
@@ -110,7 +118,7 @@ const MentorAssignment: React.FC = () => {
       style={{
         backgroundColor: "#f5f5f5",
         minHeight: "100vh",
-        padding: "2rem 0",
+        padding: "1rem 0",
       }}
     >
       <Container maxWidth="lg">
@@ -123,7 +131,7 @@ const MentorAssignment: React.FC = () => {
           }}
         >
           {/* Header with Assign Button */}
-          <Box display="flex" justifyContent="space-between" mb={3}>
+          <Box display="flex" justifyContent="space-between">
             <Typography
               variant="h4"
               gutterBottom
@@ -167,19 +175,29 @@ const MentorAssignment: React.FC = () => {
               {loadingMentors ? (
                 <CircularProgress />
               ) : (
-                <RadioGroup
-                  value={selectedMentor}
-                  onChange={(e) => setSelectedMentor(e.target.value)}
+                <Box
+                  sx={{
+                    border: "1px solid #e0e0e0",
+                    borderRadius: "8px",
+                    padding: "1rem",
+                    maxHeight: 480,
+                    overflow: "auto",
+                  }}
                 >
-                  {mentors.map((mentor) => (
-                    <FormControlLabel
-                      key={mentor._id}
-                      value={mentor._id}
-                      control={<Radio />}
-                      label={`${mentor.name} (${mentor.email})`}
-                    />
-                  ))}
-                </RadioGroup>
+                  <RadioGroup
+                    value={selectedMentor}
+                    onChange={(e) => setSelectedMentor(e.target.value)}
+                  >
+                    {mentors.map((mentor) => (
+                      <FormControlLabel
+                        key={mentor._id}
+                        value={mentor._id}
+                        control={<Radio />}
+                        label={`${mentor.name} (${mentor.email})`}
+                      />
+                    ))}
+                  </RadioGroup>
+                </Box>
               )}
             </Grid>
 
@@ -223,12 +241,40 @@ const MentorAssignment: React.FC = () => {
                     ))}
                   </Select>
                 </FormControl>
+                <FormControl fullWidth>
+                  <TextField
+                    variant="outlined"
+                    fullWidth
+                    type="number"
+                    value={noofStudentsToBeAssigned}
+                    onChange={(e) =>
+                      setNoofStudentsToBeAssigned(e.target.value)
+                    }
+                    label="No of Students to be Assigned"
+                  />
+                </FormControl>
               </Box>
 
               <Box display="flex" justifyContent="center" mt={2}>
                 <Button
                   variant="contained"
-                  onClick={fetchStudents}
+                  onClick={() => {
+                    if (noofStudentsToBeAssigned) {
+                      if (Number.parseInt(noofStudentsToBeAssigned) > 0) {
+                        fetchStudents();
+                        setSelectedStudents([]);
+                        setNoofStudentsToBeAssigned("");
+                      } else {
+                        alert(
+                          "Please enter a valid number of students to be assigned."
+                        );
+                      }
+                    } else {
+                      alert(
+                        "Please enter the number of students to be assigned."
+                      );
+                    }
+                  }}
                   disabled={loadingStudents}
                 >
                   {loadingStudents ? (
@@ -240,7 +286,7 @@ const MentorAssignment: React.FC = () => {
               </Box>
               {admissionYear && section && students.length > 0 && (
                 <Box mt={4}>
-                  <Typography
+                  {/* <Typography
                     variant="h6"
                     sx={{
                       color: "#555555",
@@ -276,7 +322,79 @@ const MentorAssignment: React.FC = () => {
                         />
                       </ListItem>
                     ))}
-                  </List>
+                  </List> */}
+                  <Typography
+                    variant="h6"
+                    sx={{ marginBottom: 1, paddingLeft: 2 }}
+                  >
+                    {`${admissionYear} - ${section} Sect. Students Information -- Class Strength: ${students.length}`}
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ marginBottom: 2, paddingLeft: 2 }}
+                  >
+                    {`${selectedStudents.length} Students Selected -- ${
+                      Number.parseInt(noofStudentsToBeAssigned) -
+                      selectedStudents.length
+                    } Remaining`}
+                  </Typography>
+                  <TableContainer
+                    sx={{
+                      maxHeight: 250,
+                      overflow: "auto",
+                      border: "1px solid #e0e0e0",
+                      borderRadius: "8px",
+                      marginTop: "1rem",
+                    }}
+                  >
+                    <Table
+                      // stickyHeader
+                      aria-label="student information table"
+                    >
+                      <TableHead>
+                        <TableRow>
+                          <TableCell sx={{ fontWeight: "bold" }}></TableCell>
+                          <TableCell sx={{ fontWeight: "bold" }}>
+                            Name
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: "bold" }}>
+                            SR No
+                          </TableCell>
+                          <TableCell sx={{ fontWeight: "bold" }}>USN</TableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {students.map((student) => (
+                          <TableRow key={student._id}>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                checked={selectedStudents.includes(student._id)}
+                                onChange={(e) => {
+                                  if (e.target.checked) {
+                                    setSelectedStudents([
+                                      ...selectedStudents,
+                                      student._id,
+                                    ]);
+                                  } else {
+                                    setSelectedStudents(
+                                      selectedStudents.filter(
+                                        (id) => id !== student._id
+                                      )
+                                    );
+                                  }
+                                }}
+                              />
+                            </TableCell>
+                            <TableCell>{student.name}</TableCell>
+                            <TableCell>{student.srNo}</TableCell>
+                            <TableCell>
+                              {student.usn ? student.usn : "Not Available"}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
                 </Box>
               )}
             </Grid>
