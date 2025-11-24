@@ -11,6 +11,8 @@ import {
   updateStudentPassword,
   getUnassignedStudents,
   updateStudentBySrNo,
+  
+addStudentMarks
 } from "../controllers/student";
 
 const studRouter = Router();
@@ -180,5 +182,10 @@ studRouter.post("/students/login", loginStudent);
 // update password
 
 studRouter.put("/students/password/:id", updateStudentPassword);
+// add student marks
+//  studRouter.post("/students/marks", addStudentMarks);
+
+
+
 
 export default studRouter;

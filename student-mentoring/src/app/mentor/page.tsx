@@ -1,37 +1,52 @@
+// src/app/mentor/page.tsx
+// This is a SERVER component (no 'use client')
+
 import { Grid, Box, Typography, Card, CardContent } from "@mui/material";
 import Link from "next/link";
 import React from "react";
-import ListAltIcon from "@mui/icons-material/ListAlt"; // For "View All Students"
-import GroupIcon from "@mui/icons-material/Group"; // For "View Mentees"
-import PersonIcon from "@mui/icons-material/Person"; // For "Mentor Profile"
+import ListAltIcon from "@mui/icons-material/ListAlt";
+import GroupIcon from "@mui/icons-material/Group";
+import PersonIcon from "@mui/icons-material/Person";
 import { auth } from "@/auth";
+ // Import the client component
+import EmailButtonWrapper from "./emailwrapper/page";
 
 const Page = async () => {
-  // Reusable icon style for better consistency
   const iconStyle = {
     fontSize: 40,
-    color: "#3f51b5", // Primary color for icons
+    color: "#3f51b5",
   };
+  
   const session = await auth();
+  
+  // This would typically come from your session/database
+  const mentorId = session?.user?.id || "MENTOR_ID_HERE";
+  const mentorName = session?.user?.name || "Mentor";
+
   const cardData = [
     {
       title: "Explore the Full Student Directory",
-      description:
-        "Browse and manage the complete list of students and their details.",
+      description: "Browse and manage the complete list of students and their details.",
       path: "/mentor/allstudents",
-      icon: <ListAltIcon sx={iconStyle} />, // Consistent icon style
+      icon: <ListAltIcon sx={iconStyle} />,
     },
     {
       title: "Manage Your Mentees",
       description: "View and track the progress of your assigned mentees.",
       path: "/mentor/mentees",
-      icon: <GroupIcon sx={iconStyle} />, // Consistent icon style
+      icon: <GroupIcon sx={iconStyle} />,
     },
     {
       title: "View Your Mentor Profile",
       description: "View your personal details",
       path: "/mentor/profile",
-      icon: <PersonIcon sx={iconStyle} />, // Consistent icon style
+      icon: <PersonIcon sx={iconStyle} />,
+    },
+    {
+      title: "Mentor Mentee Meet",
+      description: "Schedule and manage meetings with your mentees.",
+      path: "/mentor/accept",
+      icon: <PersonIcon sx={iconStyle} />,
     },
   ];
 
@@ -52,10 +67,10 @@ const Page = async () => {
           fontWeight: "bold",
           color: "#3f51b5",
           textShadow: "2px 2px 6px rgba(0, 0, 0, 0.2)",
-          mb: 1, // Reduced margin to bring subtitle closer
+          mb: 1,
         }}
       >
-        Welcome to Your Dashboard, {session?.user.name || "Mentor"}!
+        Welcome to Your Dashboard, {mentorName}!
       </Typography>
 
       {/* Subtitle */}
@@ -63,15 +78,19 @@ const Page = async () => {
         variant="h5"
         align="center"
         sx={{
-          color: "#666666", // Lighter color for a subtler look
-          fontWeight: "normal", // Reduced boldness
-          mb: 5, // Reduced margin to bring subtitle closer to the title
-          fontSize: "1rem", // Slightly smaller size
+          color: "#666666",
+          fontWeight: "normal",
+          mb: 3,
+          fontSize: "1rem",
         }}
       >
-        Click on any of the options below to start navigating through your
-        mentor dashboard.
+        Click on any of the options below to start navigating through your mentor dashboard.
       </Typography>
+
+      {/* Email Button - Client Component */}
+      <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
+        <EmailButtonWrapper mentorId={mentorId} mentorName={mentorName} />
+      </Box>
 
       {/* Grid of Cards */}
       <Grid
@@ -85,8 +104,8 @@ const Page = async () => {
             <Link href={card.path} passHref>
               <Card
                 sx={{
-                  height: "205px", // Moderate height for all screen sizes
-                  width: "100%", // Full width within the grid container
+                  height: "205px",
+                  width: "100%",
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "center",
@@ -98,16 +117,13 @@ const Page = async () => {
                     transform: "scale(1.05)",
                     boxShadow: "0px 10px 25px rgba(0, 0, 0, 0.3)",
                   },
-                  background:
-                    "linear-gradient(135deg, #f7f8fa 30%, #e6eaf0 100%)",
-                  borderRadius: "16px", // Rounded corners
+                  background: "linear-gradient(135deg, #f7f8fa 30%, #e6eaf0 100%)",
+                  borderRadius: "16px",
                   overflow: "hidden",
-
                   padding: 2,
                 }}
               >
                 <CardContent sx={{ textAlign: "center", p: 3 }}>
-                  {/* Icon at the top */}
                   <Box sx={{ mb: 2 }}>{card.icon}</Box>
                   <Typography
                     variant="h6"
@@ -115,7 +131,7 @@ const Page = async () => {
                     sx={{
                       fontWeight: "bold",
                       color: "#3f51b5",
-                      fontSize: "1.1rem", // Slightly larger title font
+                      fontSize: "1.1rem",
                     }}
                   >
                     {card.title}
@@ -125,7 +141,7 @@ const Page = async () => {
                     sx={{
                       color: "#757575",
                       mt: 1,
-                      fontSize: "0.9rem", // Adjusted font size
+                      fontSize: "0.9rem",
                     }}
                   >
                     {card.description}

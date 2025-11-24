@@ -1,197 +1,5 @@
 import mongoose, { Schema, Document, Types } from "mongoose";
-/**
- * @swagger
- * components:
- *   schemas:
- *     Student:
- *       type: object
- *       required:
- *         - email
- *         - name
- *         - admissionYear
- *         - section
- *         - srNo
- *         - dob
- *         - phone
- *         - studentEmail
- *         - aadharNumber
- *         - bloodGroup
- *         - photo
- *         - height
- *         - weight
- *         - residentType
- *         - permanentAddress
- *         - presentAddress
- *         - residentAddress
- *         - entranceExamRank
- *         - familyIncomeStatus
- *         - father
- *         - mother
- *         - hasSiblings
- *         - previousCourse
- *         - mediumOfInstruction
- *         - previousInstitutionDetails
- *       properties:
- *         email:
- *           type: string
- *           description: The student's email
- *         name:
- *           type: string
- *           description: The student's name
- *         admissionYear:
- *           type: number
- *           description: The year of admission
- *         section:
- *           type: string
- *           description: The section of the student
- *         srNo:
- *           type: string
- *           description: The student's serial number
- *         usn:
- *           type: string
- *           description: The student's university serial number
- *         dob:
- *           type: string
- *           format: date
- *           description: The student's date of birth
- *         phone:
- *           type: string
- *           description: The student's phone number
- *         studentEmail:
- *           type: string
- *           description: The student's email
- *         aadharNumber:
- *           type: string
- *           description: The student's Aadhar number
- *         bloodGroup:
- *           type: string
- *           description: The student's blood group
- *         photo:
- *           type: string
- *           description: The student's photo URL
- *         height:
- *           type: number
- *           description: The student's height
- *         weight:
- *           type: number
- *           description: The student's weight
- *         residentType:
- *           type: string
- *           description: The student's resident type
- *         permanentAddress:
- *           type: string
- *           description: The student's permanent address
- *         presentAddress:
- *           type: string
- *           description: The student's present address
- *         residentAddress:
- *           type: string
- *           description: The student's resident address
- *         entranceExamRank:
- *           type: string
- *           description: The student's entrance exam rank
- *         familyIncomeStatus:
- *           type: string
- *           description: The student's family income status
- *         father:
- *           $ref: '#/components/schemas/Parent'
- *         mother:
- *           $ref: '#/components/schemas/Parent'
- *         siblings:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Sibling'
- *         hasSiblings:
- *           type: boolean
- *           description: Whether the student has siblings
- *         previousCourse:
- *           type: string
- *           description: The student's previous course
- *         mediumOfInstruction:
- *           type: string
- *           description: The student's medium of instruction
- *         previousInstitutionDetails:
- *           type: string
- *           description: The student's previous institution details
- *         achievements:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Achievement'
- *     Parent:
- *       type: object
- *       required:
- *         - name
- *         - occupation
- *         - education
- *         - email
- *         - phone
- *         - permanentAddress
- *         - workAddress
- *       properties:
- *         name:
- *           type: string
- *           description: The parent's name
- *         occupation:
- *           type: string
- *           description: The parent's occupation
- *         education:
- *           type: string
- *           description: The parent's education
- *         email:
- *           type: string
- *           description: The parent's email
- *         phone:
- *           type: string
- *           description: The parent's phone number
- *         permanentAddress:
- *           type: string
- *           description: The parent's permanent address
- *         workAddress:
- *           type: string
- *           description: The parent's work address
- *     Sibling:
- *       type: object
- *       required:
- *         - relationType
- *         - name
- *         - occupation
- *         - education
- *       properties:
- *         relationType:
- *           type: string
- *           description: The sibling's relation type
- *         name:
- *           type: string
- *           description: The sibling's name
- *         occupation:
- *           type: string
- *           description: The sibling's occupation
- *         education:
- *           type: string
- *           description: The sibling's education
- *     Achievement:
- *       type: object
- *       required:
- *         - domain
- *         - institution
- *         - activity
- *         - prizeDetails
- *       properties:
- *         domain:
- *           type: string
- *           description: The achievement's domain
- *         institution:
- *           type: string
- *           description: The institution where the achievement was obtained
- *         activity:
- *           type: string
- *           description: The activity for which the achievement was obtained
- *         prizeDetails:
- *           type: string
- *           description: The details of the prize
- */
 
-// Interface for sibling details
 interface ISibling {
   relationType: string;
   name: string;
@@ -199,7 +7,6 @@ interface ISibling {
   education: string;
 }
 
-// Interface for achievement details
 interface IAchievement {
   domain: string;
   institution: string;
@@ -207,7 +14,6 @@ interface IAchievement {
   prizeDetails: string;
 }
 
-// Interface for parent details
 interface IParent {
   name: string;
   occupation: string;
@@ -218,12 +24,26 @@ interface IParent {
   workAddress: string;
 }
 
+interface IMark {
+  subject: string;
+  cie1: number;
+  cie2: number;
+  cie3: number;
+  semester?: number;
+  isVerified?: boolean;
+  verifiedBy?: mongoose.Types.ObjectId | null;
+}
+
 interface IEntranceExamRank {
   rank: string;
   examName: string;
 }
 
-// Interface for the main student document
+interface ISemester {
+  semester: number;
+  subjects: IMark[];
+}
+
 interface IStudent extends Document {
   email: string;
   name: string;
@@ -257,7 +77,13 @@ interface IStudent extends Document {
   previousInstitutionDetails: string;
   achievements: IAchievement[];
   mentor: Types.ObjectId;
+  marks: IMark[];
+  semesters: ISemester[];
   password: string;
+  // New fields for appointment system
+  appointments: Types.ObjectId[];
+  isAvailableForMeeting: boolean;
+  preferredMeetingTimes: string[];
 }
 
 const entranceExamRankSchema = new Schema<IEntranceExamRank>({
@@ -265,7 +91,6 @@ const entranceExamRankSchema = new Schema<IEntranceExamRank>({
   examName: { type: String, required: true },
 });
 
-// Sibling schema
 const siblingSchema = new Schema<ISibling>({
   relationType: { type: String, required: true },
   name: { type: String, required: true },
@@ -273,7 +98,6 @@ const siblingSchema = new Schema<ISibling>({
   education: { type: String, required: true },
 });
 
-// Achievement schema
 const achievementSchema = new Schema<IAchievement>({
   domain: { type: String, required: true },
   institution: { type: String, required: true },
@@ -281,7 +105,6 @@ const achievementSchema = new Schema<IAchievement>({
   prizeDetails: { type: String, required: true },
 });
 
-// Parent schema
 const parentSchema = new Schema<IParent>({
   name: { type: String, required: true },
   occupation: { type: String, required: true },
@@ -292,7 +115,24 @@ const parentSchema = new Schema<IParent>({
   workAddress: { type: String, required: true },
 });
 
-// Main student schema
+const SubjectMarksSchema = new Schema<IMark>({
+  subject: { type: String, required: true },
+  cie1: { type: Number, default: 0 },
+  cie2: { type: Number, default: 0 },
+  cie3: { type: Number, default: 0 },
+  isVerified: { type: Boolean, default: false },
+  verifiedBy: {
+    type: Schema.Types.ObjectId,
+    ref: "Admin",
+    default: null,
+  },
+});
+
+const SemesterSchema = new Schema<ISemester>({
+  semester: { type: Number, required: true },
+  subjects: [SubjectMarksSchema],
+});
+
 const studentSchema = new Schema<IStudent>({
   email: { type: String, required: true },
   name: { type: String, required: true },
@@ -330,12 +170,17 @@ const studentSchema = new Schema<IStudent>({
   achievements: { type: [achievementSchema], default: [] },
   mentor: { type: Schema.Types.ObjectId, ref: "Mentor" },
   password: { type: String, required: true },
+  semesters: [SemesterSchema],
+  marks: [SemesterSchema],
+  // New fields
+  appointments: [{ type: Schema.Types.ObjectId, ref: "Appointment" }],
+  isAvailableForMeeting: { type: Boolean, default: true },
+  preferredMeetingTimes: { type: [String], default: [] },
 });
 
 const convertDriveLinkToDirect = (driveLink: string) => {
   const regex = /(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
   const match = driveLink.match(regex);
-
   if (match && match[1]) {
     const fileId = match[1];
     return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
@@ -344,7 +189,6 @@ const convertDriveLinkToDirect = (driveLink: string) => {
   }
 };
 
-// Hash the password before saving
 studentSchema.pre("save", async function (next) {
   if (!this.isModified("password")) {
     return next();
@@ -356,5 +200,4 @@ studentSchema.pre("save", async function (next) {
 });
 
 const Student = mongoose.model<IStudent>("Student", studentSchema);
-
 export default Student;

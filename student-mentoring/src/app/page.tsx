@@ -1,16 +1,7 @@
-import Image from "next/image";
+'use client';
+// import LandingPage from '../components/LandingPage';
+import LandingPage from './landing/page';
 
 export default function Home() {
-  return (
-    <>
-      <h1>Home</h1>
-      <Image
-        src="/next.svg"
-        className="dark:bg-gray-800"
-        alt="Next.js Logo"
-        width={500}
-        height={500}
-      />
-    </>
-  );
+  return <LandingPage />;
 }
