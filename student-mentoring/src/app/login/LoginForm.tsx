@@ -39,30 +39,21 @@ const LoginScreen = () => {
     setLoading(true);
     
     try {
-      if (data.role === "admin") {
-        if (data.userid === "admin123" && data.password === "secretpass") {
-          toast.success("Admin authenticated!");
-          await signin({ ...data, role: "admin" });
-          router.push("/admin/dashboard");
-          return;
-        } else {
-          toast.error("Invalid admin credentials");
-        }
-      } else {
-        await signin(data);
-        toast.success("Logged in successfully");
+      await signin(data);
+      toast.success("Logged in successfully");
 
-        if (data.role === "mentor") {
-          router.push("/mentor");
-          return;
-        } else if (data.role === "student") {
-          router.push("/student/dashboard");
-          return;
-        }
+      // Redirect based on role
+      if (data.role === "mentor") {
+        router.push("/mentor");
+      } else if (data.role === "student") {
+        router.push("/student/dashboard");
+      } else if (data.role === "admin") {
+        router.push("/admin/dashboard");
       }
-    } catch (e) {
+    } catch (e: any) {
       console.error("Login error:", e);
-      toast.error("Login failed");
+      const errorMessage = e?.message || "Login failed. Please check your credentials.";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -71,13 +62,85 @@ const LoginScreen = () => {
   return (
     <Box
       display="flex"
+      flexDirection="column"
       justifyContent="center"
       alignItems="center"
-      height="100vh"
+      minHeight="100vh"
       sx={{
-        background: "linear-gradient(to bottom right, #f3e8ff, #e0d4f7)",
+        position: "relative",
+        background: `
+          linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%),
+          url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=2070&auto=format&fit=crop')
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+        py: 4,
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: `
+            repeating-linear-gradient(
+              45deg,
+              transparent,
+              transparent 10px,
+              rgba(255, 255, 255, 0.03) 10px,
+              rgba(255, 255, 255, 0.03) 20px
+            )
+          `,
+          pointerEvents: "none",
+        },
       }}
     >
+      {/* Header Section */}
+      <Box
+        sx={{
+          mb: 4,
+          textAlign: "center",
+          animation: "fadeInDown 1s ease-in-out",
+          "@keyframes fadeInDown": {
+            "0%": {
+              opacity: 0,
+              transform: "translateY(-20px)",
+            },
+            "100%": {
+              opacity: 1,
+              transform: "translateY(0)",
+            },
+          },
+        }}
+      >
+        <Typography
+          variant="h2"
+          sx={{
+            color: "white",
+            fontWeight: 800,
+            mb: 1,
+            textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+            fontSize: { xs: "2rem", sm: "2.5rem", md: "3rem" },
+          }}
+        >
+          Mentora
+        </Typography>
+        <Typography
+          variant="h6"
+          sx={{
+            color: "rgba(255, 255, 255, 0.95)",
+            fontWeight: 400,
+            letterSpacing: "0.5px",
+            textShadow: "1px 1px 2px rgba(0,0,0,0.2)",
+            fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
+          }}
+        >
+          A Student Mentoring Platform
+        </Typography>
+      </Box>
+
       <Paper
         elevation={10}
         sx={{
@@ -86,6 +149,17 @@ const LoginScreen = () => {
           borderRadius: 5,
           width: { xs: "90%", sm: "420px" },
           backgroundColor: "white",
+          animation: "fadeInUp 1s ease-in-out",
+          "@keyframes fadeInUp": {
+            "0%": {
+              opacity: 0,
+              transform: "translateY(20px)",
+            },
+            "100%": {
+              opacity: 1,
+              transform: "translateY(0)",
+            },
+          },
         }}
       >
         <Typography

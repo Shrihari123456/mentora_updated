@@ -7,6 +7,7 @@ import React from "react";
 import ListAltIcon from "@mui/icons-material/ListAlt";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
+import ChatIcon from "@mui/icons-material/Chat";
 import { auth } from "@/auth";
  // Import the client component
 import EmailButtonWrapper from "./emailwrapper/page";
@@ -37,6 +38,12 @@ const Page = async () => {
       icon: <GroupIcon sx={iconStyle} />,
     },
     {
+      title: "Chat with Mentees",
+      description: "Send and receive messages from your assigned students.",
+      path: "/mentor/chat",
+      icon: <ChatIcon sx={iconStyle} />,
+    },
+    {
       title: "View Your Mentor Profile",
       description: "View your personal details",
       path: "/mentor/profile",
@@ -54,7 +61,14 @@ const Page = async () => {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(to top, #e0eafc, #cfdef3)",
+        position: "relative",
+        background: `
+          linear-gradient(to top, rgba(224, 234, 252, 0.95), rgba(207, 222, 243, 0.95)),
+          url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?q=80&w=2070&auto=format&fit=crop')
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
         py: 5,
       }}
     >

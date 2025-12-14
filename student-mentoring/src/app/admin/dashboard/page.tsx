@@ -7,13 +7,25 @@ import {
   FiCheckCircle,
   FiUsers,
   FiLogOut,
+  FiMessageSquare,
 } from 'react-icons/fi';
 
 export default function AdminDashboard() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+    <div 
+      className="min-h-screen" 
+      style={{
+        background: `
+          linear-gradient(to bottom right, rgba(249, 250, 251, 0.95), rgba(243, 244, 246, 0.95)),
+          url('https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?q=80&w=2070&auto=format&fit=crop')
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
         {/* Header */}
@@ -75,6 +87,34 @@ export default function AdminDashboard() {
             buttonColor="bg-purple-600 hover:bg-purple-700"
             onClick={() => router.push('/admin/report')}
           />
+        </div>
+
+        {/* Communication Section */}
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">💬 Communication Center</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Chat with Students */}
+            <Card
+              title="Chat with Students"
+              description="Send direct messages to any student in the system"
+              icon={<FiMessageSquare size={24} />}
+              bg="bg-indigo-100"
+              color="text-indigo-600"
+              buttonColor="bg-indigo-600 hover:bg-indigo-700"
+              onClick={() => router.push('/admin/chat/students')}
+            />
+
+            {/* Chat with Mentors */}
+            <Card
+              title="Chat with Mentors"
+              description="Communicate with mentors regarding student progress"
+              icon={<FiMessageSquare size={24} />}
+              bg="bg-teal-100"
+              color="text-teal-600"
+              buttonColor="bg-teal-600 hover:bg-teal-700"
+              onClick={() => router.push('/admin/chat/mentors')}
+            />
+          </div>
         </div>
 
         {/* Quick Stats */}

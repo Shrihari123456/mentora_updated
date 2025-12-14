@@ -44,7 +44,18 @@ const LandingPage: React.FC = () => {
   return (
     <div className="min-h-screen bg-purple-50 text-gray-800 font-sans">
       {/* Hero Section */}
-      <section className="py-24 px-6 text-center bg-gradient-to-br from-purple-500 to-purple-700 text-white">
+      <section 
+        className="py-24 px-6 text-center relative text-white"
+        style={{
+          background: `
+            linear-gradient(135deg, rgba(139, 92, 246, 0.95) 0%, rgba(124, 58, 237, 0.95) 100%),
+            url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?q=80&w=2071&auto=format&fit=crop')
+          `,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed'
+        }}
+      >
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

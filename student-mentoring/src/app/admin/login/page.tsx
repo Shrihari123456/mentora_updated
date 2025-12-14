@@ -26,7 +26,18 @@ export default function AdminLoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div 
+      className="min-h-screen flex items-center justify-center" 
+      style={{
+        background: `
+          linear-gradient(135deg, rgba(243, 244, 246, 0.95), rgba(229, 231, 235, 0.95)),
+          url('https://images.unsplash.com/photo-1497366216548-37526070297c?q=80&w=2069&auto=format&fit=crop')
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="bg-white p-8 rounded shadow-md w-full max-w-sm">
         <h2 className="text-2xl font-bold mb-6">Admin Login</h2>
         <input

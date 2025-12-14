@@ -201,7 +201,13 @@ const StudentDashboard = () => {
       sx={{
         minHeight: "100vh",
         padding: 3,
-        background: "linear-gradient(135deg, #e3f2fd, #bbdefb)",
+        background: `
+          linear-gradient(135deg, rgba(227, 242, 253, 0.95), rgba(187, 222, 251, 0.95)),
+          url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?q=80&w=2070&auto=format&fit=crop')
+        `,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
       }}
     >
       <form
@@ -236,42 +242,47 @@ const StudentDashboard = () => {
         >
           Student Details
         </Typography>
-        <Tabs
-          value={activeTab}
-          onChange={handleChangeTab}
-          indicatorColor="primary"
-          textColor="primary"
-          centered
-          sx={{
-            mb: 3,
-            "& .MuiTab-root": {
-              padding: "12px 16px",
-              fontWeight: 500,
-            },
-            "& .MuiTabs-flexContainer": {
-              borderBottom: "1px solid #ddd",
-            },
-          }}
-        >
+        
+        {/* Tab Navigation with External Buttons */}
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", mb: 2 }}>
           <Button
             onClick={() => handleTabButtonClick(activeTab - 1)}
             endIcon={<FaArrowLeft />}
             disabled={activeTab === 1}
+            sx={{ mr: 1 }}
           />
-          {[
-            { icon: <Fa1 />, label: "Personal Details" },
-            { icon: <Fa2 />, label: "Parents" },
-            { icon: <Fa3 />, label: "Academic Profile" },
-            { icon: <Fa4 />, label: "Achievements" },
-          ].map((tab, index) => (
-            <Tab key={index} icon={tab.icon} label={tab.label} />
-          ))}
+          <Tabs
+            value={activeTab}
+            onChange={handleChangeTab}
+            indicatorColor="primary"
+            textColor="primary"
+            centered
+            sx={{
+              "& .MuiTab-root": {
+                padding: "12px 16px",
+                fontWeight: 500,
+              },
+              "& .MuiTabs-flexContainer": {
+                borderBottom: "1px solid #ddd",
+              },
+            }}
+          >
+            {[
+              { icon: <Fa1 />, label: "Personal Details" },
+              { icon: <Fa2 />, label: "Parents" },
+              { icon: <Fa3 />, label: "Academic Profile" },
+              { icon: <Fa4 />, label: "Achievements" },
+            ].map((tab, index) => (
+              <Tab key={index} icon={tab.icon} label={tab.label} />
+            ))}
+          </Tabs>
           <Button
             onClick={() => handleTabButtonClick(activeTab + 1)}
             endIcon={<FaArrowRight />}
             disabled={activeTab === 4}
+            sx={{ ml: 1 }}
           />
-        </Tabs>
+        </Box>
 
         {activeTab === 1 && (
           <Box sx={{ px: 2, mb: 3 }}>

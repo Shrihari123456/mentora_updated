@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { User, Book, Calendar, MapPin, Mail, X, Send } from 'lucide-react';
+import { User, Book, Calendar, MapPin, Mail, X, Send, MessageCircle } from 'lucide-react';
 
 interface Event {
   _id: string;
@@ -21,10 +21,10 @@ export default function StudentDashboard() {
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false);
 
   // Replace these with actual values from your auth/session
-  const studentId = "STUDENT_ID_HERE"; // Get from session/auth
-  const mentorId = "MENTOR_ID_HERE"; // Get from student data
+  const studentId = "CA242711"; // Get from session/auth
+  const mentorId = "MNT001"; // Get from student data
   const studentName = "Shrihari";
-  const studentUSN = "CA233024";
+  const studentUSN = "CA242711";
 
   const getEventColor = (type: string) => {
     switch (type) {
@@ -89,7 +89,18 @@ export default function StudentDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+    <div 
+      className="min-h-screen" 
+      style={{
+        background: `
+          linear-gradient(to bottom right, rgba(248, 250, 252, 0.95), rgba(241, 245, 249, 0.95)),
+          url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?q=80&w=2070&auto=format&fit=crop')
+        `,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed'
+      }}
+    >
       <div className="max-w-6xl mx-auto px-6 py-12">
 
         {/* Header Section */}
@@ -150,6 +161,13 @@ export default function StudentDashboard() {
               icon: <Book size={24} />,
               color: "bg-blue-100 text-blue-600",
               path: "/student/addmarks",
+            },
+            {
+              title: "Chat with Mentor",
+              description: "Send and receive messages from your mentor",
+              icon: <MessageCircle size={24} />,
+              color: "bg-purple-100 text-purple-600",
+              path: "/student/chat",
             },
             {
               title: "Meeting Schedule",
