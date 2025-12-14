@@ -11,6 +11,7 @@ import verificationRouter from "./routes/verification";
 import eventRoutes from "./routes/event";
 import appointmentRouter from "./routes/appointment";
 import studmentRouter from "./routes/query";
+import chatRouter from "./routes/chat";
 // import adminRouter from "./routes/admin";
 const app = express();
 
@@ -22,7 +23,7 @@ app.use(logger);
 app.use(cors());
 const port =8000;
 await mongoose.connect(
-  process.env.MONGODB_URI || "mongodb://localhost:27017/test"
+  process.env.MONGODB_URI || "mongodb://localhost:27017/mentora"
 );
 
 console.log("Connected to MongoDB...");
@@ -46,6 +47,8 @@ app.use("/api/events", eventRoutes);
 app.use("/api/appointments", appointmentRouter);
 app.use("/api/query", studmentRouter);
 app.use("/api/admin", adminRouter);
+app.use(chatRouter);
+app.use("/api/chat", chatRouter);
 app.use((req, res, next) => {
   res.status(404).send("Not Found");
 });

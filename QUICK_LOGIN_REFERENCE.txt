@@ -1,0 +1,59 @@
+# 🎯 QUICK LOGIN REFERENCE
+
+## ✅ Everything is FIXED and READY!
+
+### Login URL
+**http://localhost:3000/login**
+
+---
+
+## 📋 Test Credentials
+
+### 👨‍🎓 STUDENT
+```
+User ID:  CA242711  OR  UU246020
+Password: password
+Role:     Student
+```
+
+### 👨‍🏫 MENTOR  
+```
+User ID:  MNT001  OR  MNT002
+Password: password
+Role:     Mentor
+```
+
+### 👨‍💼 ADMIN
+```
+User ID:  admin123
+Password: secretpass
+Role:     Admin
+```
+
+---
+
+## ✨ What Each Dashboard Shows
+
+| Role | Dashboard URL | Features |
+|------|--------------|----------|
+| Student | `/student/dashboard` | Events, Email Mentor, Profile |
+| Mentor | `/mentor` | All Students, Mentees, Profile, Reports |
+| Admin | `/admin/dashboard` | Upload Marks, Verify Marks, Assign Mentees |
+
+---
+
+## 🔧 Servers Running
+
+- **Frontend**: http://localhost:3000
+- **Backend**: http://localhost:8000  
+- **Database**: MongoDB (Connected ✅)
+
+---
+
+## 💡 TIP
+The password for all test students and mentors is simply: **password**
+
+---
+
+**Last Updated**: December 7, 2025
+**Status**: ✅ FULLY OPERATIONAL

@@ -11,8 +11,8 @@ import {
   updateStudentPassword,
   getUnassignedStudents,
   updateStudentBySrNo,
-  
-addStudentMarks
+
+  addStudentMarks
 } from "../controllers/student";
 
 const studRouter = Router();
@@ -86,8 +86,6 @@ studRouter.get("/students-unassigned", getUnassignedStudents);
  *         description: Student not found
  */
 
-studRouter.get("/students/:id", getStudentById);
-
 //fetch by srNo
 
 studRouter.get("/students/srNo/:srNo", getStudentBySrNo);
@@ -95,6 +93,8 @@ studRouter.get("/students/srNo/:srNo", getStudentBySrNo);
 //fetch by usn
 
 studRouter.get("/students/usn/:usn", getStudentByUsn);
+
+studRouter.get("/students/:id", getStudentById);
 
 /**
  * @swagger

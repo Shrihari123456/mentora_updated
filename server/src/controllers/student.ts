@@ -1,4 +1,4 @@
-import { Request,RequestHandler, Response,NextFunction } from "express";
+import { Request, RequestHandler, Response, NextFunction } from "express";
 // import Student from "../models/student";
 // import { IMark } from "../models/student";
 import Student from "../models/student";
@@ -56,7 +56,10 @@ export const getStudentByUsn = async (
   res: Response
 ): Promise<any> => {
   try {
-    const student = await Student.findOne({ usn: req.params.usn });
+    const student = await Student.findOne({ usn: req.params.usn }).populate(
+      "mentor",
+      "name empId email dept"
+    );
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
@@ -340,37 +343,37 @@ export const getStudentMarks = async (req: Request, res: Response) => {
   try {
     const { studentId } = req.params;
     const { semester } = req.query;
-    
+
     const student = await Student.findById(studentId);
-    
+
     if (!student) {
       return res.status(404).json({ message: "Student not found" });
     }
-    
+
     // If semester is specified, return only that semester's data
     if (semester) {
       const semesterData = student.semesters.find(
         (sem: any) => sem.semester === parseInt(semester as string)
       );
-      
+
       if (!semesterData) {
         return res.status(404).json({ message: `No data found for semester ${semester}` });
       }
-      
+
       return res.status(200).json({
         studentId: student._id,
         name: student.name,
         semesterData
       });
     }
-    
+
     // Otherwise return all semesters
     res.status(200).json({
       studentId: student._id,
       name: student.name,
       semesters: student.semesters
     });
-    
+
   } catch (error) {
     console.error(error);
     // res.status(500).json({ message: "Server error", error: error.message });
