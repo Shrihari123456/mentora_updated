@@ -7,12 +7,12 @@ import {
   Typography,
   Paper,
   CircularProgress,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import { useState } from "react";
 import { useForm, Controller } from "react-hook-form";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { signin } from "./actions";
 
 interface LoginFormValues {
   role: "mentor" | "student" | "admin";
@@ -29,34 +29,131 @@ const LoginScreen = () => {
     formState: { errors },
     setValue,
   } = useForm<LoginFormValues>({
-    defaultValues: { role: "mentor", userid: "", password: "" },
+    defaultValues: { role: "student", userid: "", password: "" },
   });
 
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const role = watch("role");
 
   const onSubmit = async (data: LoginFormValues) => {
     setLoading(true);
+    setError(null);
+    setSuccess(null);
     
     try {
-      await signin(data);
-      toast.success("Logged in successfully");
-
-      // Redirect based on role
-      if (data.role === "mentor") {
-        router.push("/mentor");
-      } else if (data.role === "student") {
-        router.push("/student/dashboard");
+      let endpoint = '';
+      let requestData = {};
+      
+      // Different endpoints based on role
+      const API_BASE_URL = 'http://localhost:8000/api';
+      
+      if (data.role === "student") {
+        endpoint = `${API_BASE_URL}/students/login`;
+        requestData = {
+          srNo: data.userid,
+          password: data.password
+        };
+      } else if (data.role === "mentor") {
+        endpoint = `${API_BASE_URL}/mentors/login`;
+        requestData = {
+          empId: data.userid,
+          password: data.password
+        };
       } else if (data.role === "admin") {
-        router.push("/admin/dashboard");
+        endpoint = `${API_BASE_URL}/admin/login`;
+        requestData = {
+          adminId: data.userid,
+          password: data.password
+        };
       }
+  
+      console.log('Calling API:', endpoint, 'with data:', requestData);
+  
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(requestData),
+      });
+  
+      // Check if response is OK
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          const errorJson = JSON.parse(errorText);
+          throw new Error(errorJson.message || `HTTP error! status: ${response.status}`);
+        } catch {
+          throw new Error(`Login failed with status: ${response.status}`);
+        }
+      }
+  
+      const result = await response.json();
+      console.log('Login response:', result);
+  
+      // if (!result.success) {
+      //   throw new Error(result.message || 'Login failed');
+      // }
+  
+      // Store ONLY essential user data (no token needed)
+     // Store ONLY essential user data (no token needed)
+    // Store ONLY essential user data (no token needed)
+    // Store ONLY essential user data (no token needed)
+    // Store ONLY essential user data (no token needed)
+    if (result.student) {
+      localStorage.setItem('student', JSON.stringify(result.student));
+      localStorage.setItem('role', 'student');
+      localStorage.setItem('isAuthenticated', 'true');
+      setSuccess(`Welcome ${result.student.name}!`);
+      
+      console.log('Redirecting to student dashboard...');
+      
+      // Use window.location.href for hard navigation (more reliable for protected routes)
+      setTimeout(() => {
+        window.location.href = '/student/dashboard';
+      }, 800);
+      
+    } else if (result.mentor) {
+      localStorage.setItem('mentor', JSON.stringify(result.mentor));
+      localStorage.setItem('role', 'mentor');
+      localStorage.setItem('isAuthenticated', 'true');
+      setSuccess(`Welcome ${result.mentor.name}!`);
+      
+      setTimeout(() => {
+        window.location.href = '/mentor';
+      }, 800);
+      
+    } else if (result.admin) {
+      localStorage.setItem('admin', JSON.stringify(result.admin));
+      localStorage.setItem('role', 'admin');
+      localStorage.setItem('isAuthenticated', 'true');
+      setSuccess(`Welcome ${result.admin.name}!`);
+      
+      setTimeout(() => {
+        window.location.href = '/admin/dashboard';
+      }, 800);
+    }
+
+    // Keep loading state active during navigation
+
+    // Keep loading state active during navigation
+
+    // Keep loading state active during navigation
+  
+      // Keep loading state active during navigation
     } catch (e: any) {
       console.error("Login error:", e);
-      const errorMessage = e?.message || "Login failed. Please check your credentials.";
-      toast.error(errorMessage);
-    } finally {
-      setLoading(false);
+      setError(e.message || "Login failed. Please check your credentials.");
+      setLoading(false); // Only set false on error
     }
+  };
+  const handleRoleChange = (newRole: LoginFormValues["role"]) => {
+    setValue("role", newRole);
+    setValue("userid", "");
+    setValue("password", "");
+    setError(null);
   };
 
   return (
@@ -75,46 +172,11 @@ const LoginScreen = () => {
         backgroundSize: "cover",
         backgroundPosition: "center",
         backgroundRepeat: "no-repeat",
-        backgroundAttachment: "fixed",
         py: 4,
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: `
-            repeating-linear-gradient(
-              45deg,
-              transparent,
-              transparent 10px,
-              rgba(255, 255, 255, 0.03) 10px,
-              rgba(255, 255, 255, 0.03) 20px
-            )
-          `,
-          pointerEvents: "none",
-        },
       }}
     >
       {/* Header Section */}
-      <Box
-        sx={{
-          mb: 4,
-          textAlign: "center",
-          animation: "fadeInDown 1s ease-in-out",
-          "@keyframes fadeInDown": {
-            "0%": {
-              opacity: 0,
-              transform: "translateY(-20px)",
-            },
-            "100%": {
-              opacity: 1,
-              transform: "translateY(0)",
-            },
-          },
-        }}
-      >
+      <Box sx={{ mb: 4, textAlign: "center" }}>
         <Typography
           variant="h2"
           sx={{
@@ -133,11 +195,20 @@ const LoginScreen = () => {
             color: "rgba(255, 255, 255, 0.95)",
             fontWeight: 400,
             letterSpacing: "0.5px",
-            textShadow: "1px 1px 2px rgba(0,0,0,0.2)",
             fontSize: { xs: "0.9rem", sm: "1rem", md: "1.25rem" },
           }}
         >
-          A Student Mentoring Platform
+          Student Login: SR Number + First Name
+        </Typography>
+        <Typography
+          variant="body2"
+          sx={{
+            color: "rgba(255, 255, 255, 0.8)",
+            mt: 1,
+            fontStyle: 'italic'
+          }}
+        >
+          Example: SR Number: CA24771, Password: ashika
         </Typography>
       </Box>
 
@@ -149,17 +220,6 @@ const LoginScreen = () => {
           borderRadius: 5,
           width: { xs: "90%", sm: "420px" },
           backgroundColor: "white",
-          animation: "fadeInUp 1s ease-in-out",
-          "@keyframes fadeInUp": {
-            "0%": {
-              opacity: 0,
-              transform: "translateY(20px)",
-            },
-            "100%": {
-              opacity: 1,
-              transform: "translateY(0)",
-            },
-          },
         }}
       >
         <Typography
@@ -169,16 +229,14 @@ const LoginScreen = () => {
           gutterBottom
           sx={{ color: "#7b2cbf" }}
         >
-          {role === "admin" ? "Admin Login" : "Login"}
+          {role === "admin" ? "Admin Login" : `${role.charAt(0).toUpperCase() + role.slice(1)} Login`}
         </Typography>
 
         <Box display="flex" justifyContent="center" gap={2} my={3}>
-          {["mentor", "student", "admin"].map((r) => (
+          {["student", "mentor", "admin"].map((r) => (
             <Button
               key={r}
-              onClick={() => {
-                setValue("role", r as LoginFormValues["role"]);
-              }}
+              onClick={() => handleRoleChange(r as LoginFormValues["role"])}
               variant={role === r ? "contained" : "outlined"}
               sx={{
                 borderRadius: "30px",
@@ -198,7 +256,7 @@ const LoginScreen = () => {
           <Controller
             name="userid"
             control={control}
-            rules={{ required: "ID is required" }}
+            rules={{ required: `${role === 'admin' ? 'Admin ID' : role === 'mentor' ? 'Employee ID' : 'SR Number'} is required` }}
             render={({ field }) => (
               <TextField
                 {...field}
@@ -207,12 +265,14 @@ const LoginScreen = () => {
                     ? "Admin ID"
                     : role === "mentor"
                     ? "Employee ID"
-                    : "SR Number"
+                    : "SR Number (e.g., CA24771)"
                 }
                 fullWidth
                 margin="normal"
                 error={!!errors.userid}
                 helperText={errors.userid?.message || ""}
+                placeholder={role === "student" ? "Enter your SR Number" : ""}
+                disabled={loading}
               />
             )}
           />
@@ -224,12 +284,22 @@ const LoginScreen = () => {
             render={({ field }) => (
               <TextField
                 {...field}
-                label="Password"
+                label={
+                  role === "student" 
+                    ? "Password (Your First Name)" 
+                    : "Password"
+                }
                 type="password"
                 fullWidth
                 margin="normal"
                 error={!!errors.password}
-                helperText={errors.password?.message || ""}
+                helperText={
+                  role === "student" 
+                    ? errors.password?.message || "Enter your first name in lowercase" 
+                    : errors.password?.message || ""
+                }
+                placeholder={role === "student" ? "e.g., ashika" : ""}
+                disabled={loading}
               />
             )}
           />
@@ -250,8 +320,44 @@ const LoginScreen = () => {
           >
             {loading ? <CircularProgress size={24} color="inherit" /> : "Login"}
           </Button>
+
+          {role === "student" && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              display="block"
+              textAlign="center"
+              mt={2}
+              sx={{ fontStyle: 'italic' }}
+            >
+              Password hint: Your first name (lowercase)
+            </Typography>
+          )}
         </form>
       </Paper>
+
+      {/* Error/Success Messages */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!success}
+        autoHideDuration={1500}
+        onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSuccess(null)}>
+          {success}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

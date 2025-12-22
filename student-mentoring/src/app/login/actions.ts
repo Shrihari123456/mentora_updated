@@ -1,38 +1,72 @@
 "use server";
 
-import { signIn } from "@/auth";
-import { AuthError } from "next-auth";
-
 export async function signin(data: {
   role: string;
   userid: string;
   password: string;
 }) {
   try {
-    await signIn("credentials", {
-      ...data,
-      redirect: false,
-    });
+    let endpoint = '';
+    let requestData = {};
     
-    return { success: true };
-  } catch (error) {
-    if (error instanceof AuthError) {
-      console.error("Authentication error:", error.type, error.message);
-      
-      switch (error.type) {
-        case "CredentialsSignin":
-          throw new Error("Invalid ID or password. Please check your credentials.");
-        case "CallbackRouteError":
-          throw new Error("Authentication failed. Please try again.");
-        default:
-          throw new Error("Something went wrong. Please try again later.");
-      }
+    if (data.role === "student") {
+      endpoint = `${process.env.NEXT_PUBLIC_API_URL}/students/login`;
+      requestData = {
+        srNo: data.userid,
+        password: data.password
+      };
+    } else if (data.role === "mentor") {
+      endpoint = `${process.env.NEXT_PUBLIC_API_URL}/mentors/login`;
+      requestData = {
+        empId: data.userid,
+        password: data.password
+      };
+    } else if (data.role === "admin") {
+      endpoint = `${process.env.NEXT_PUBLIC_API_URL}/admin/login`;
+      requestData = {
+        adminId: data.userid,
+        password: data.password
+      };
     }
-    throw error;
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestData),
+      cache: 'no-store'
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) {
+      throw new Error(result.message || 'Login failed');
+    }
+
+    return { 
+      success: true, 
+      user: result.student || result.mentor || result.admin,
+      role: data.role 
+    };
+    
+  } catch (error: any) {
+    console.error("Login error:", error);
+    throw new Error(error.message || "Login failed. Please check your credentials.");
   }
 }
 
 export async function signout() {
-  const { signOut } = await import("@/auth");
-  await signOut({ redirectTo: "/login" });
+  // Clear localStorage
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('student');
+    localStorage.removeItem('mentor');
+    localStorage.removeItem('admin');
+    localStorage.removeItem('role');
+    localStorage.removeItem('token');
+  }
+  
+  // Redirect to login
+  const { redirect } = await import('next/navigation');
+  redirect('/login');
 }

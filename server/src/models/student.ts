@@ -138,14 +138,14 @@ const studentSchema = new Schema<IStudent>({
   name: { type: String, required: true },
   admissionYear: { type: Number, required: true },
   section: { type: String, required: true },
-  srNo: { type: String, required: true },
+  srNo: { type: String, required: true, unique: true },
   usn: { type: String },
   dob: { type: Date, required: true },
   phone: { type: String, required: true },
   studentEmail: { type: String, required: true },
   aadharNumber: { type: String, required: true },
   bloodGroup: { type: String, required: true },
-  photo: { type: String, required: true },
+  photo: { type: String},
   height: { type: Number, required: true },
   weight: { type: Number, required: true },
   residentType: { type: String, required: true },
@@ -158,44 +158,77 @@ const studentSchema = new Schema<IStudent>({
   entranceExamRank: {
     type: entranceExamRankSchema,
     required: true,
+    default: () => ({ rank: 'Not Available', examName: 'Entrance Exam' })
   },
-  familyIncomeStatus: { type: String, required: true },
-  father: { type: parentSchema, required: true },
-  mother: { type: parentSchema, required: true },
+  familyIncomeStatus: { type: String, required: true, default: 'Above Poverty Line (APL)' },
+  father: { 
+    type: parentSchema, 
+    required: true,
+    default: () => ({
+      name: 'Not Provided',
+      occupation: 'Not Provided',
+      education: 'Not Provided',
+      email: 'notprovided@example.com',
+      phone: '0000000000',
+      permanentAddress: 'Not Provided',
+      workAddress: 'Not Provided'
+    })
+  },
+  mother: { 
+    type: parentSchema, 
+    required: true,
+    default: () => ({
+      name: 'Not Provided',
+      occupation: 'Not Provided',
+      education: 'Not Provided',
+      email: 'notprovided@example.com',
+      phone: '0000000000',
+      permanentAddress: 'Not Provided',
+      workAddress: 'Not Provided'
+    })
+  },
   siblings: { type: [siblingSchema], default: [] },
-  hasSiblings: { type: Boolean, required: true },
-  previousCourse: { type: String, required: true },
-  mediumOfInstruction: { type: String, required: true },
-  previousInstitutionDetails: { type: String, required: true },
+  hasSiblings: { type: Boolean, required: true, default: false },
+  previousCourse: { type: String, required: true, default: 'Science' },
+  mediumOfInstruction: { type: String, required: true, default: 'English' },
+  previousInstitutionDetails: { type: String, required: true, default: 'Local School' },
   achievements: { type: [achievementSchema], default: [] },
   mentor: { type: Schema.Types.ObjectId, ref: "Mentor" },
   password: { type: String, required: true },
-  semesters: [SemesterSchema],
-  marks: [SemesterSchema],
-  // New fields
+  semesters: { type: [SemesterSchema], default: [] },
+  marks: { type: [SemesterSchema], default: [] },
   appointments: [{ type: Schema.Types.ObjectId, ref: "Appointment" }],
   isAvailableForMeeting: { type: Boolean, default: true },
   preferredMeetingTimes: { type: [String], default: [] },
 });
 
-const convertDriveLinkToDirect = (driveLink: string) => {
-  const regex = /(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
-  const match = driveLink.match(regex);
-  if (match && match[1]) {
-    const fileId = match[1];
-    return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
-  } else {
-    return driveLink;
-  }
-};
-
+// Password hashing for BUN
 studentSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    return next();
+  if (this.isModified("password") && this.password) {
+    try {
+      // Bun password hashing
+      const hashedPassword = await Bun.password.hash(this.password);
+      this.password = hashedPassword;
+    } catch (error: any) {
+      return next(error);
+    }
   }
-  const hashedPassword = await Bun.password.hash(this.password);
-  this.password = hashedPassword;
-  this.photo = convertDriveLinkToDirect(this.photo);
+  
+  // Convert Google Drive link if present
+  if (this.photo && this.isModified("photo")) {
+    const convertDriveLinkToDirect = (driveLink: string) => {
+      const regex = /(?:file\/d\/|open\?id=)([a-zA-Z0-9_-]+)/;
+      const match = driveLink.match(regex);
+      if (match && match[1]) {
+        const fileId = match[1];
+        return `https://drive.usercontent.google.com/download?id=${fileId}&export=download`;
+      }
+      return driveLink;
+    };
+    
+    this.photo = convertDriveLinkToDirect(this.photo);
+  }
+  
   next();
 });
 

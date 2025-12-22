@@ -10,7 +10,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import ChatIcon from "@mui/icons-material/Chat";
 import { auth } from "@/auth";
  // Import the client component
-import EmailButtonWrapper from "./emailwrapper/page";
+// import EmailButtonWrapper from "./emailwrapper/page";
 
 const Page = async () => {
   const iconStyle = {
@@ -103,7 +103,7 @@ const Page = async () => {
 
       {/* Email Button - Client Component */}
       <Box sx={{ display: "flex", justifyContent: "center", mb: 4 }}>
-        <EmailButtonWrapper mentorId={mentorId} mentorName={mentorName} />
+        {/* <EmailButtonWrapper mentorId={mentorId} mentorName={mentorName} /> */}
       </Box>
 
       {/* Grid of Cards */}

@@ -1,7 +1,9 @@
-import mongoose, { Schema, Document } from 'mongoose';
+// models/chat.ts
+import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface IMessage {
-  sender: string;
+  _id?: Types.ObjectId;
+  sender: string; // srNo for student, empId for mentor
   senderType: 'mentor' | 'student';
   content: string;
   timestamp: Date;
@@ -9,35 +11,87 @@ export interface IMessage {
 }
 
 export interface IChat extends Document {
-  mentorEmpId: string; // MNT001
-  studentSrNo: string; // CA242711
+  mentorEmpId: string;
+  studentSrNo: string;
   messages: IMessage[];
   lastMessage: string;
   lastMessageTime: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  unreadCount?: {
+    student: number; // Messages unread by student
+    mentor: number;  // Messages unread by mentor
+  };
 }
 
-const MessageSchema = new Schema({
-  sender: { type: String, required: true },
-  senderType: { type: String, required: true, enum: ['mentor', 'student'] },
-  content: { type: String, required: true },
-  timestamp: { type: Date, default: Date.now },
-  read: { type: Boolean, default: false }
+const messageSchema = new Schema<IMessage>({
+  sender: { 
+    type: String, 
+    required: true 
+  },
+  senderType: { 
+    type: String, 
+    enum: ['mentor', 'student'], 
+    required: true 
+  },
+  content: { 
+    type: String, 
+    required: true,
+    trim: true
+  },
+  timestamp: { 
+    type: Date, 
+    default: Date.now 
+  },
+  read: { 
+    type: Boolean, 
+    default: false 
+  }
+}, { _id: true });
+
+const chatSchema = new Schema<IChat>({
+  mentorEmpId: { 
+    type: String, 
+    required: true,
+    index: true 
+  },
+  studentSrNo: { 
+    type: String, 
+    required: true,
+    index: true 
+  },
+  messages: [messageSchema],
+  lastMessage: { 
+    type: String, 
+    default: '' 
+  },
+  lastMessageTime: { 
+    type: Date, 
+    default: Date.now 
+  },
+  unreadCount: {
+    student: { type: Number, default: 0 },
+    mentor: { type: Number, default: 0 }
+  }
+}, { 
+  timestamps: true 
 });
 
-const ChatSchema = new Schema({
-  mentorEmpId: { type: String, required: true, default: 'MNT001' },
-  studentSrNo: { type: String, required: true, default: 'CA242711' },
-  messages: [MessageSchema],
-  lastMessage: { type: String, default: '' },
-  lastMessageTime: { type: Date, default: Date.now }
-}, {
-  timestamps: true
+// Compound unique index
+chatSchema.index({ mentorEmpId: 1, studentSrNo: 1 }, { unique: true });
+
+// Update unread counts before save
+chatSchema.pre('save', function(next) {
+  if (!this.mentorEmpId || !this.studentSrNo) {
+    next(new Error('mentorEmpId and studentSrNo are required'));
+  } else {
+    // Calculate unread counts
+    this.unreadCount = {
+      student: this.messages.filter(msg => msg.senderType === 'mentor' && !msg.read).length,
+      mentor: this.messages.filter(msg => msg.senderType === 'student' && !msg.read).length
+    };
+    next();
+  }
 });
 
-// Index for faster queries
-ChatSchema.index({ mentorEmpId: 1, studentSrNo: 1 }, { unique: true });
-ChatSchema.index({ lastMessageTime: -1 });
+const Chat = mongoose.model<IChat>("Chat", chatSchema);
 
-export const Chat = mongoose.models.Chat || mongoose.model<IChat>('Chat', ChatSchema);
+export default Chat;

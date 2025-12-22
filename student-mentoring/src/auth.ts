@@ -48,7 +48,7 @@ async function getUserFromDb({ userid, password, role }: AuthPayload) {
       throw new Error("Missing credentials");
     }
 
-    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+    const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api";
     console.log("=== Login Attempt ===");
     console.log("Role:", role);
     console.log("User ID:", userid);

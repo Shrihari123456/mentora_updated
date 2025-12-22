@@ -41,12 +41,39 @@ export const verifyStudentMarks = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Server error occurred" });
   }
 };
-export const adminLogin = (req: Request, res: Response) => {
-  const { userid, password } = req.body;
+export const adminLogin = async (req: Request, res: Response) => {
+  try {
+    const { adminId, password } = req.body;
 
-  if (userid === "admin123" && password === "secretpass") {
-    return res.status(200).json({ message: "Admin authenticated" });
-  } else {
-    return res.status(401).json({ error: "Invalid admin credentials" });
+    if (!adminId || !password) {
+      return res.status(400).json({ message: "Admin ID and password are required" });
+    }
+
+    // Check if adminId and password match
+    if (adminId === "admin123" && password === "secretpass") {
+      // Return admin data (you can customize this)
+      const adminData = {
+        id: "admin123",
+        name: "System Administrator",
+        role: "admin"
+      };
+      
+      return res.status(200).json({ 
+        message: "Admin authenticated",
+        success: true,
+        admin: adminData 
+      });
+    } else {
+      return res.status(401).json({ 
+        message: "Invalid admin credentials",
+        success: false 
+      });
+    }
+  } catch (error) {
+    console.error("Admin login error:", error);
+    return res.status(500).json({ 
+      message: "Server error occurred",
+      success: false 
+    });
   }
 };

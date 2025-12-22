@@ -126,22 +126,63 @@ export const getStudents = async (
 
 // Login mentor
 
+// Updated login mentor function in your controller
+// Updated loginMentor function
 export const loginMentor = async (
   req: Request,
   res: Response
 ): Promise<any> => {
   try {
-    const mentor = await Mentor.findOne({ empId: req.body.empId });
+    const { empId, password } = req.body;
+    
+    const mentor = await Mentor.findOne({ empId });
+    
     if (!mentor) {
-      return res.status(404).json({ message: "Mentor not found" });
+      return res.status(404).json({ 
+        success: false,
+        message: "Mentor not found." 
+      });
     }
-    const valid = await Bun.password.verify(req.body.password, mentor.password);
-    if (!valid) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    
+    try {
+      // Try Bun password verification
+      const valid = await Bun.password.verify(password, mentor.password);
+      
+      if (!valid) {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid credentials." 
+        });
+      }
+      
+    } catch (error: any) {
+      // If Bun password verification fails, check if it's a simple match
+      // (for testing purposes only - remove this in production!)
+      if (password === mentor.password) {
+        console.warn(`⚠️ Mentor ${empId} using plain text password!`);
+      } else {
+        return res.status(400).json({ 
+          success: false,
+          message: "Invalid credentials." 
+        });
+      }
     }
-    res.status(200).json(mentor);
+    
+    const mentorData = mentor.toObject();
+    delete (mentorData as any).password;
+    
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      mentor: mentorData
+    });
+    
   } catch (error) {
-    res.status(500).json({ message: (error as Error).message });
+    console.error('Login error:', error);
+    res.status(500).json({ 
+      success: false,
+      message: "Internal server error"
+    });
   }
 };
 
@@ -166,6 +207,29 @@ export const updatePassword = async (
     mentor.password = req.body.newPassword;
     await mentor.save();
     res.status(200).json(mentor);
+  } catch (error) {
+    res.status(500).json({ message: (error as Error).message });
+  }
+};
+// New controller function to get students by mentor's empId
+export const getStudentsByEmpId = async (
+  req: Request,
+  res: Response
+): Promise<any> => {
+  try {
+    const { empId } = req.params;
+    
+    // Find mentor by empId (not _id)
+    const mentor = await Mentor.findOne({ empId: empId });
+    
+    if (!mentor) {
+      return res.status(404).json({ message: "Mentor not found with empId: " + empId });
+    }
+    
+    // Find students assigned to this mentor using mentor's ObjectId
+    const students = await Student.find({ mentor: mentor._id }).populate("mentor");
+    
+    res.status(200).json(students);
   } catch (error) {
     res.status(500).json({ message: (error as Error).message });
   }

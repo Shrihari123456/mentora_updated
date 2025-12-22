@@ -20,7 +20,6 @@ import Image from "next/image";
 import Link from "next/link";
 import MenteeReport from "./menteeReport";
 import { compile } from "@fileforge/react-print";
-import { useSession } from "next-auth/react";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useRouter } from "next/navigation";
 
@@ -35,33 +34,67 @@ const ViewMentees: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const session = useSession();
+  const [mentorData, setMentorData] = useState<any>(null);
   const router = useRouter();
 
+  // Check authentication on mount
   useEffect(() => {
-    const fetchMentees = async () => {
-      setIsLoading(true);
-      setError(null);
-      if (!session.data?.user.id) return;
+    const checkAuth = () => {
+      const mentor = localStorage.getItem("mentor");
+      const isAuthenticated = localStorage.getItem("isAuthenticated");
+      const role = localStorage.getItem("role");
+
+      if (!isAuthenticated || role !== "mentor" || !mentor) {
+        router.push("/");
+        return null;
+      }
+
       try {
-        const response = await fetch(
-          `https://student-mentoring-server.onrender.com/mentors/students/${session.data?.user.id}`
-        );
-        if (!response.ok) {
-          throw new Error("Failed to fetch mentees");
-        }
-        const data = await response.json();
-        setMentees(data);
-        setFilteredMentees(data);
-      } catch (err: any) {
-        setError(err.message || "An unexpected error occurred");
-      } finally {
-        setIsLoading(false);
+        return JSON.parse(mentor);
+      } catch (err) {
+        console.error("Error parsing mentor data:", err);
+        router.push("/");
+        return null;
       }
     };
 
-    fetchMentees();
-  }, [session.data?.user.id]);
+    const mentor = checkAuth();
+    if (mentor) {
+      setMentorData(mentor);
+    }
+  }, [router]);
+
+  useEffect(() => {
+  // In your fetchMentees function
+const fetchMentees = async () => {
+  if (!mentorData?.empId) return;
+  
+  setIsLoading(true);
+  setError(null);
+  try {
+    // Use the new endpoint with empId
+    const response = await fetch(
+      `http://localhost:8000/api/mentors/students/emp/${mentorData.empId}`
+    );
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch mentees");
+    }
+    
+    const data = await response.json();
+    setMentees(data);
+    setFilteredMentees(data);
+  } catch (err: any) {
+    setError(err.message || "An unexpected error occurred");
+  } finally {
+    setIsLoading(false);
+  }
+};
+
+    if (mentorData) {
+      fetchMentees();
+    }
+  }, [mentorData]);
 
   useEffect(() => {
     if (mentees) {
@@ -92,6 +125,11 @@ const ViewMentees: React.FC = () => {
     setActiveTab(newValue);
   };
 
+  const handleLogout = () => {
+    localStorage.clear();
+    router.push("/");
+  };
+
   if (isLoading)
     return (
       <Box
@@ -119,30 +157,31 @@ const ViewMentees: React.FC = () => {
       <Box
         sx={{
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
           minHeight: "100vh",
           bgcolor: "background.default",
+          position: "relative",
         }}
       >
         <IconButton
-          onClick={() => {
-            router.back();
-          }} // Define this function for navigation logic
+          onClick={() => router.back()}
           sx={{
-            position: "absolute", // Positioning at the top left
-            top: 16, // Slight margin from top
-            left: 16, // Slight margin from left
-            color: "#3f51b5", // Match the theme
+            position: "absolute",
+            top: 16,
+            left: 16,
+            color: "#3f51b5",
             backgroundColor: "#ffffff",
             boxShadow: 2,
             "&:hover": {
-              backgroundColor: "#f0f0f0", // Slight hover effect
+              backgroundColor: "#f0f0f0",
             },
           }}
         >
           <ArrowBackIcon />
         </IconButton>
+        
         <Typography
           align="center"
           variant="h5"
@@ -156,10 +195,26 @@ const ViewMentees: React.FC = () => {
             textTransform: "uppercase",
             letterSpacing: 1,
             maxWidth: 400,
+            mb: 3,
           }}
         >
           No Mentees Assigned Yet!
         </Typography>
+        
+        {mentorData && (
+          <Typography variant="h6" sx={{ mb: 2 }}>
+            Welcome, {mentorData.name}!
+          </Typography>
+        )}
+        
+        <Button
+          variant="contained"
+          color="error"
+          onClick={handleLogout}
+          sx={{ mt: 2 }}
+        >
+          Logout
+        </Button>
       </Box>
     );
   }
@@ -167,36 +222,51 @@ const ViewMentees: React.FC = () => {
   return (
     <Box sx={{ padding: 3, bgcolor: "#f4f5f7", minHeight: "100vh" }}>
       <IconButton
-        onClick={() => {
-          router.back();
-        }} // Define this function for navigation logic
+        onClick={() => router.back()}
         sx={{
-          position: "absolute", // Positioning at the top left
-          top: 16, // Slight margin from top
-          left: 16, // Slight margin from left
-          color: "#3f51b5", // Match the theme
+          position: "absolute",
+          top: 16,
+          left: 16,
+          color: "#3f51b5",
           backgroundColor: "#ffffff",
           boxShadow: 2,
           "&:hover": {
-            backgroundColor: "#f0f0f0", // Slight hover effect
+            backgroundColor: "#f0f0f0",
           },
         }}
       >
         <ArrowBackIcon />
       </IconButton>
-      <Typography
-        variant="h4"
-        align="center"
-        gutterBottom
-        sx={{
-          mb: 4,
-          color: "#3f51b5",
-          fontWeight: "bold",
-          textShadow: "2px 2px 6px rgba(0, 0, 0, 0.2)",
-        }}
-      >
-        Mentees
-      </Typography>
+      
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+        <Typography
+          variant="h4"
+          sx={{
+            color: "#3f51b5",
+            fontWeight: "bold",
+            textShadow: "2px 2px 6px rgba(0, 0, 0, 0.2)",
+          }}
+        >
+          Mentees
+        </Typography>
+        
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          {mentorData && (
+            <Typography variant="h6" sx={{ color: "#666" }}>
+              Mentor: {mentorData.name}
+            </Typography>
+          )}
+          <Button
+            variant="outlined"
+            color="error"
+            onClick={handleLogout}
+            size="small"
+          >
+            Logout
+          </Button>
+        </Box>
+      </Box>
+      
       <Typography
         variant="h5"
         align="center"
@@ -210,6 +280,7 @@ const ViewMentees: React.FC = () => {
         Click on any of the mentees to view their details and download the
         report.
       </Typography>
+      
       <Box sx={{ mb: 4, textAlign: "center" }}>
         <TextField
           variant="outlined"
@@ -222,6 +293,7 @@ const ViewMentees: React.FC = () => {
           }}
         />
       </Box>
+      
       {filteredMentees && filteredMentees.length ? (
         <Grid container spacing={3}>
           {filteredMentees.map((student) => (
@@ -262,7 +334,7 @@ const ViewMentees: React.FC = () => {
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
-            borderRadius: "8px", // Rounded corners
+            borderRadius: "8px",
             padding: "24px",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.1)",
           },
@@ -384,7 +456,7 @@ const ViewMentees: React.FC = () => {
                       ) : selectedStudent.localGuardianDetails ? (
                         <Typography>
                           <strong>Local Guardian : </strong>
-                          {selectedStudent.hostelWardenDetails}
+                          {selectedStudent.localGuardianDetails}
                         </Typography>
                       ) : (
                         " "

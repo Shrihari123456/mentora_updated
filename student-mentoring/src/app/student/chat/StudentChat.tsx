@@ -1,6 +1,7 @@
+// components/StudentChat.tsx
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -11,229 +12,247 @@ import {
   CircularProgress,
   Alert,
   Chip,
-  Button,
+  Badge,
 } from '@mui/material';
 import SendIcon from '@mui/icons-material/Send';
 import ChatIcon from '@mui/icons-material/Chat';
 import RefreshIcon from '@mui/icons-material/Refresh';
-import InfoIcon from '@mui/icons-material/Info';
-import ErrorIcon from '@mui/icons-material/Error';
-
-interface Message {
-  _id?: string;
-  sender: string;
-  senderType: 'mentor' | 'student';
-  content: string;
-  timestamp: string | Date;
-  read: boolean;
-}
-
-// HARDCODED VALUES
-const STUDENT_SRNO = "CA242711";
-const MENTOR_EMPID = "MNT001";
-const MENTOR_NAME = "Mentor_1"; // From your MongoDB screenshot
-const STUDENT_NAME = "ASHTA UBS N"; // From your MongoDB screenshot
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+// TypeScript Interfaces
+interface IStudent {
+  _id: string;
+  srNo: string;
+  name: string;
+  email?: string;
+  section: string;
+  photo?: string;
+}
+
+interface IMentor {
+  _id: string;
+  empId: string;
+  name: string;
+  department?: string;
+  dept?: string;
+  email?: string;
+  phone?: string;
+  photo?: string;
+  designation?: string;
+}
+
+interface IMessage {
+  _id: string;
+  content: string;
+  senderType: 'student' | 'mentor';
+  timestamp: string;
+  read: boolean;
+}
+
+interface LocalStorageStudent {
+  srNo: string;
+  name: string;
+  photo?: string;
+  section: string;
+}
+
 export default function StudentChat() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<IMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [chatExists, setChatExists] = useState(false);
+  const [studentInfo, setStudentInfo] = useState<IStudent | null>(null);
+  const [mentorInfo, setMentorInfo] = useState<IMentor | null>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Debug logging
   useEffect(() => {
-    console.log('Hardcoded Chat:', {
-      studentSrNo: STUDENT_SRNO,
-      studentName: STUDENT_NAME,
-      mentorEmpId: MENTOR_EMPID,
-      mentorName: MENTOR_NAME
-    });
+    const studentDataString = localStorage.getItem('student');
+    if (studentDataString) {
+      try {
+        const studentData: LocalStorageStudent = JSON.parse(studentDataString);
+        if (studentData && studentData.srNo) {
+          const studentInfoObj: IStudent = {
+            _id: '',
+            srNo: studentData.srNo,
+            name: studentData.name || '',
+            email: '',
+            section: studentData.section || '',
+            photo: studentData.photo,
+          };
+          setStudentInfo(studentInfoObj);
+          fetchStudentChatInfo(studentData.srNo);
+        } else {
+          setError('Invalid student data in localStorage');
+          setLoading(false);
+        }
+      } catch (error) {
+        console.error('Error parsing student data:', error);
+        setError('Invalid student data in localStorage');
+        setLoading(false);
+      }
+    } else {
+      setError('No student data found. Please login again.');
+      setLoading(false);
+    }
   }, []);
 
-  // Scroll to bottom
+  const fetchStudentChatInfo = async (srNo: string) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/chat/student/${srNo}/info`);
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          if (data.student) {
+            setStudentInfo(data.student);
+          }
+          
+          if (data.mentor) {
+            setMentorInfo(data.mentor);
+          }
+          
+          if (data.chat) {
+            setUnreadCount(data.chat.unreadCount || 0);
+            if (data.mentor) {
+              fetchMessages();
+            }
+          }
+        } else {
+          setError(data.message || 'Failed to load chat info');
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching chat info:', error);
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchMessages = async () => {
+    if (!studentInfo?.srNo) return;
+
+    try {
+      const url = `${API_BASE_URL}/api/chat/messages?role=student&srNo=${studentInfo.srNo}`;
+      const res = await fetch(url);
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          const typedMessages: IMessage[] = (data.messages || []).map((msg: any) => ({
+            _id: msg._id || msg.id || Math.random().toString(),
+            content: msg.content || '',
+            senderType: msg.senderType || 'student',
+            timestamp: msg.timestamp || new Date().toISOString(),
+            read: msg.read || false,
+          }));
+          
+          setMessages(typedMessages);
+          
+          if (typedMessages.length > 0) {
+            await markMessagesAsRead();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch messages:', error);
+    }
+  };
+
+  const markMessagesAsRead = async () => {
+    if (!studentInfo?.srNo || !mentorInfo?.empId) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/api/chat/read`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          role: 'student',
+          studentSrNo: studentInfo.srNo,
+          mentorEmpId: mentorInfo.empId
+        }),
+      });
+      setUnreadCount(0);
+    } catch (error) {
+      console.error('Failed to mark as read:', error);
+    }
+  };
+
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Fetch messages
-  const fetchMessages = useCallback(async () => {
-    try {
-      setRefreshing(true);
-      setError(null);
-      
-      console.log('Fetching messages from:', `${API_BASE_URL}/messages`);
-      
-      const res = await fetch(`${API_BASE_URL}/messages`);
-      
-      console.log('Response status:', res.status);
-      
-      if (res.ok) {
-        const data = await res.json();
-        console.log('Messages data:', data);
-        
-        if (data.success) {
-          if (data.messages && Array.isArray(data.messages)) {
-            setMessages(data.messages);
-            setChatExists(data.messages.length > 0);
-          } else if (data.chat?.messages) {
-            setMessages(data.chat.messages);
-            setChatExists(data.chat.messages.length > 0);
-          }
-          
-          // Mark messages as read
-          try {
-            await fetch(`${API_BASE_URL}/read`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ readerType: 'student' }),
-            });
-          } catch (readError) {
-            console.log('Note: Could not mark messages as read', readError);
-          }
-        } else {
-          setError(data.message || 'Failed to fetch messages');
-        }
-      } else {
-        const errorText = await res.text();
-        console.error('Error response:', errorText);
-        setError(`Server error: ${res.status}`);
-      }
-    } catch (error) {
-      console.error('Failed to fetch messages:', error);
-      setError('Network error. Please check your connection.');
-    } finally {
-      setLoading(false);
-      setRefreshing(false);
-    }
-  }, []);
-
-  // Send message
   const handleSendMessage = async () => {
-    if (!newMessage.trim()) return;
+    if (!newMessage.trim() || !studentInfo?.srNo) return;
 
     setSending(true);
     setError(null);
     
     try {
-      console.log('Sending message:', newMessage.trim());
-      
-      const res = await fetch(`${API_BASE_URL}/send`, {
+      const res = await fetch(`${API_BASE_URL}/api/chat/send`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          senderType: 'student',
-          content: newMessage.trim(),
+          role: 'student',
+          srNo: studentInfo.srNo,
+          content: newMessage.trim()
         }),
       });
-
-      console.log('Send response status:', res.status);
       
       if (res.ok) {
         const data = await res.json();
-        console.log('Send response data:', data);
-        
         if (data.success) {
-          setMessages(data.chat?.messages || []);
+          const typedMessages: IMessage[] = (data.chat?.messages || []).map((msg: any) => ({
+            _id: msg._id || msg.id || Math.random().toString(),
+            content: msg.content || '',
+            senderType: msg.senderType || 'student',
+            timestamp: msg.timestamp || new Date().toISOString(),
+            read: msg.read || false,
+          }));
+          
+          setMessages(typedMessages);
           setNewMessage('');
-          setChatExists(true);
           scrollToBottom();
+          
+          setTimeout(fetchMessages, 500);
         } else {
           setError(data.message || 'Failed to send message');
         }
       } else {
-        const errorText = await res.text();
-        console.error('Send error response:', errorText);
-        setError(`Failed to send message: ${errorText}`);
+        const errorData = await res.json().catch(() => ({}));
+        setError(errorData.message || 'Failed to send message');
       }
     } catch (error) {
       console.error('Failed to send message:', error);
-      setError('Network error. Please try again.');
+      setError('Network error');
     } finally {
       setSending(false);
     }
   };
 
-  // Create chat if it doesn't exist
-  const createChat = async () => {
-    try {
-      setLoading(true);
-      console.log('Creating chat...');
-      
-      const res = await fetch(`${API_BASE_URL}/send`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          senderType: 'student',
-          content: "Hello!",
-        }),
-      });
-      
-      if (res.ok) {
-        const data = await res.json();
-        if (data.success) {
-          setMessages(data.chat?.messages || []);
-          setChatExists(true);
-          setError(null);
-        } else {
-          setError(data.message || 'Failed to create chat');
-        }
-      } else {
-        const errorText = await res.text();
-        setError(`Failed to create chat: ${errorText}`);
-      }
-    } catch (error) {
-      console.error('Failed to create chat:', error);
-      setError('Failed to create chat. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Handle refresh
   const handleRefresh = () => {
-    fetchMessages();
+    if (studentInfo?.srNo) {
+      fetchStudentChatInfo(studentInfo.srNo);
+    }
   };
 
-  // Initial fetch
   useEffect(() => {
-    fetchMessages();
-  }, [fetchMessages]);
-
-  // Auto-refresh every 5 seconds if chat exists
-  useEffect(() => {
-    if (!chatExists) return;
-    
-    const interval = setInterval(() => {
-      fetchMessages();
-    }, 5000);
-
-    return () => clearInterval(interval);
-  }, [chatExists, fetchMessages]);
-
-  // Scroll to bottom when messages change
-  useEffect(() => {
-    if (messages.length > 0) {
-      setTimeout(() => {
-        scrollToBottom();
-      }, 100);
-    }
+    scrollToBottom();
   }, [messages]);
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  useEffect(() => {
+    if (mentorInfo?.empId) {
+      const interval = setInterval(fetchMessages, 5000);
+      return () => clearInterval(interval);
     }
-  };
+  }, [mentorInfo]);
 
-  const formatTime = (timestamp: string | Date) => {
+  const formatTime = (timestamp: string) => {
     const date = new Date(timestamp);
     return date.toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -242,7 +261,7 @@ export default function StudentChat() {
     });
   };
 
-  const formatDate = (timestamp: string | Date) => {
+  const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
     const today = new Date();
     const yesterday = new Date(today);
@@ -259,281 +278,119 @@ export default function StudentChat() {
     });
   };
 
-  const getInitials = (name: string) => {
-    if (!name) return 'U';
-    return name
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
+  const getInitials = (name?: string) => {
+    if (!name) return '?';
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
-  // Loading state
-  if (loading) {
+  if (loading && !mentorInfo) {
     return (
-      <Box
-        sx={{
-          height: '600px',
-          borderRadius: 3,
-          overflow: 'hidden',
-          boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-          bgcolor: 'white',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          alignItems: 'center',
-          p: 4,
-        }}
-      >
-        <CircularProgress sx={{ color: '#6366f1', mb: 2 }} />
-        <Typography color="text.secondary" align="center">
-          Loading chat with {MENTOR_NAME}...
+      <Box sx={{ height: '600px', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: 'white', borderRadius: 3 }}>
+        <CircularProgress sx={{ color: '#6366f1' }} />
+      </Box>
+    );
+  }
+
+  if (!mentorInfo) {
+    return (
+      <Box sx={{ height: '600px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', bgcolor: 'white', borderRadius: 3, p: 3 }}>
+        <ChatIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
+        <Typography variant="h6" color="text.secondary" gutterBottom>
+          No Mentor Assigned
+        </Typography>
+        <Typography variant="body2" color="text.secondary" align="center">
+          You don't have an assigned mentor yet.
           <br />
-          <Typography variant="caption" color="text.secondary">
-            Mentor ID: {MENTOR_EMPID}
-            <br />
-            Student USN: {STUDENT_SRNO}
-          </Typography>
+          Please contact administration for assistance.
+        </Typography>
+        <Typography variant="caption" color="text.secondary" sx={{ mt: 2 }}>
+          Student: {studentInfo?.name} ({studentInfo?.srNo})
         </Typography>
       </Box>
     );
   }
 
   return (
-    <Box
-      sx={{
-        height: '600px',
-        borderRadius: 3,
-        overflow: 'hidden',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
-        bgcolor: 'white',
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      {/* Chat Header */}
-      <Box
-        sx={{
-          p: 2,
-          background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)',
-          color: 'white',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          position: 'relative',
-        }}
-      >
+    <Box sx={{ height: '600px', borderRadius: 3, overflow: 'hidden', boxShadow: 3, bgcolor: 'white', display: 'flex', flexDirection: 'column' }}>
+      {/* Header */}
+      <Box sx={{ p: 2, background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Avatar 
-            sx={{ 
-              bgcolor: 'rgba(255,255,255,0.2)',
-              width: 44,
-              height: 44,
-              border: '2px solid rgba(255,255,255,0.3)'
-            }}
-          >
-            {getInitials(MENTOR_NAME)}
-          </Avatar>
+          <Badge badgeContent={unreadCount} color="error">
+            <Avatar sx={{ bgcolor: 'rgba(255,255,255,0.2)', width: 44, height: 44 }}>
+              {mentorInfo.photo ? (
+                <img src={mentorInfo.photo} alt={mentorInfo.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <Typography sx={{ color: 'white' }}>
+                  {getInitials(mentorInfo.name)}
+                </Typography>
+              )}
+            </Avatar>
+          </Badge>
           <Box>
             <Typography fontWeight={600} fontSize="1.1rem">
-              {MENTOR_NAME}
+              {mentorInfo.name}
+              {unreadCount > 0 && (
+                <Typography component="span" sx={{ ml: 1, fontSize: '0.8rem', opacity: 0.9 }}>
+                  ({unreadCount} new)
+                </Typography>
+              )}
             </Typography>
-            <Typography variant="body2" sx={{ opacity: 0.9, fontSize: '0.85rem' }}>
-              CSE • {MENTOR_EMPID}
+            <Typography variant="body2" sx={{ opacity: 0.9 }}>
+              {mentorInfo.department || mentorInfo.dept || 'Department'} • {mentorInfo.empId}
+            </Typography>
+            <Typography variant="caption" sx={{ opacity: 0.8, display: 'block', mt: 0.5 }}>
+              Student: {studentInfo?.name} ({studentInfo?.srNo})
             </Typography>
           </Box>
         </Box>
         
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-          {!chatExists && (
-            <Chip 
-              label="Start Chat" 
-              size="small" 
-              sx={{ 
-                bgcolor: '#10b981',
-                color: 'white',
-                fontSize: '0.7rem',
-                fontWeight: 500
-              }} 
-              onClick={createChat}
-            />
-          )}
-          <IconButton 
-            onClick={handleRefresh} 
-            sx={{ 
-              color: 'white',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.1)' }
-            }}
-            disabled={refreshing}
-          >
-            {refreshing ? <CircularProgress size={20} color="inherit" /> : <RefreshIcon />}
-          </IconButton>
-        </Box>
+        <IconButton onClick={handleRefresh} sx={{ color: 'white' }}>
+          <RefreshIcon />
+        </IconButton>
       </Box>
 
-      {/* Error Display */}
       {error && (
-        <Alert 
-          severity={error.includes('create') || error.includes('not found') ? "info" : "error"}
-          icon={error.includes('create') || error.includes('not found') ? <InfoIcon /> : <ErrorIcon />}
-          sx={{ 
-            mx: 2, 
-            mt: 2,
-            borderRadius: 2,
-            '& .MuiAlert-message': { fontSize: '0.9rem' }
-          }}
-          onClose={() => setError(null)}
-          action={
-            (error.includes('create') || error.includes('not found')) && (
-              <Button color="inherit" size="small" onClick={createChat}>
-                Start Chat
-              </Button>
-            )
-          }
-        >
+        <Alert severity="error" sx={{ mx: 2, mt: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
-      {/* Debug Info */}
-      <Box sx={{ 
-        p: 1, 
-        bgcolor: '#f0f9ff', 
-        textAlign: 'center',
-        borderBottom: '1px solid #e2e8f0'
-      }}>
-        <Typography variant="caption" color="#0369a1">
-          <strong>Hardcoded Chat:</strong> {STUDENT_NAME} ({STUDENT_SRNO}) ↔ {MENTOR_NAME} ({MENTOR_EMPID})
-        </Typography>
-      </Box>
-
-      {/* Messages Area */}
-      <Box
-        sx={{
-          flex: 1,
-          overflow: 'auto',
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 1.5,
-          bgcolor: '#f8fafc',
-          position: 'relative',
-        }}
-      >
+      {/* Messages */}
+      <Box sx={{ flex: 1, overflow: 'auto', p: 2, display: 'flex', flexDirection: 'column', gap: 1.5, bgcolor: '#f8fafc' }}>
         {messages.length === 0 ? (
-          <Box
-            sx={{
-              position: 'absolute',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              textAlign: 'center',
-              width: '100%',
-              p: 3,
-            }}
-          >
+          <Box sx={{ textAlign: 'center', mt: 8 }}>
             <ChatIcon sx={{ fontSize: 60, color: '#e0e0e0', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              {chatExists ? 'No messages yet' : 'Start a conversation'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 3, maxWidth: '400px', mx: 'auto' }}>
-              {chatExists 
-                ? 'Send your first message to your mentor'
-                : 'Click "Start Chat" above to begin chatting'}
-            </Typography>
-            {!chatExists && (
-              <Button
-                variant="contained"
-                onClick={createChat}
-                sx={{
-                  bgcolor: '#6366f1',
-                  '&:hover': { bgcolor: '#4f46e5' }
-                }}
-              >
-                Start Chat
-              </Button>
-            )}
+            <Typography variant="h6" color="text.secondary">No messages yet</Typography>
+            <Typography variant="body2" color="text.secondary">Start your conversation with your mentor!</Typography>
           </Box>
         ) : (
           <>
             {messages.map((msg, index) => {
               const isStudent = msg.senderType === 'student';
-              const showDate =
-                index === 0 ||
-                formatDate(messages[index - 1].timestamp) !==
-                  formatDate(msg.timestamp);
+              const showDate = index === 0 || formatDate(messages[index - 1].timestamp) !== formatDate(msg.timestamp);
 
               return (
                 <Box key={msg._id || index}>
                   {showDate && (
-                    <Box
-                      sx={{
-                        display: 'flex',
-                        justifyContent: 'center',
-                        my: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          px: 2,
-                          py: 0.5,
-                          bgcolor: 'rgba(99, 102, 241, 0.1)',
-                          borderRadius: '12px',
-                          color: '#6366f1',
-                          fontWeight: 500,
-                          fontSize: '0.75rem',
-                        }}
-                      >
-                        {formatDate(msg.timestamp)}
-                      </Typography>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', my: 2 }}>
+                      <Chip label={formatDate(msg.timestamp)} size="small" sx={{ bgcolor: '#e0e7ff', color: '#6366f1' }} />
                     </Box>
                   )}
                   
-                  <Box
-                    sx={{
-                      display: 'flex',
-                      justifyContent: isStudent ? 'flex-end' : 'flex-start',
-                      mb: 1,
-                    }}
-                  >
-                    <Paper
-                      sx={{
-                        p: 1.5,
-                        px: 2,
-                        maxWidth: '75%',
-                        borderRadius: isStudent
-                          ? '18px 18px 4px 18px'
-                          : '18px 18px 18px 4px',
-                        bgcolor: isStudent ? '#6366f1' : 'white',
-                        color: isStudent ? 'white' : 'text.primary',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                      }}
-                      elevation={0}
-                    >
-                      <Typography 
-                        variant="body1" 
-                        sx={{ 
-                          wordBreak: 'break-word',
-                          fontSize: '0.95rem',
-                          lineHeight: 1.4
-                        }}
-                      >
+                  <Box sx={{ display: 'flex', justifyContent: isStudent ? 'flex-end' : 'flex-start', mb: 1 }}>
+                    <Paper sx={{ 
+                      p: 1.5, 
+                      px: 2, 
+                      maxWidth: '75%', 
+                      borderRadius: isStudent ? '18px 18px 4px 18px' : '18px 18px 18px 4px', 
+                      bgcolor: isStudent ? '#6366f1' : 'white', 
+                      color: isStudent ? 'white' : 'text.primary',
+                      boxShadow: 1
+                    }}>
+                      <Typography variant="body1" sx={{ wordBreak: 'break-word' }}>
                         {msg.content}
                       </Typography>
-                      
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          display: 'block',
-                          textAlign: 'right',
-                          mt: 0.5,
-                          opacity: 0.7,
-                          color: isStudent ? 'rgba(255,255,255,0.8)' : 'text.secondary',
-                          fontSize: '0.7rem',
-                        }}
-                      >
+                      <Typography variant="caption" sx={{ display: 'block', textAlign: 'right', mt: 0.5, opacity: 0.7 }}>
                         {formatTime(msg.timestamp)}
                         {!isStudent && !msg.read && ' • Unread'}
                       </Typography>
@@ -547,70 +404,26 @@ export default function StudentChat() {
         )}
       </Box>
 
-      {/* Message Input */}
-      <Box
-        sx={{
-          p: 2,
-          bgcolor: 'white',
-          borderTop: '1px solid #e0e0e0',
-          display: 'flex',
-          gap: 1,
-          alignItems: 'flex-end',
-        }}
-      >
+      {/* Input */}
+      <Box sx={{ p: 2, bgcolor: 'white', borderTop: 1, borderColor: 'divider', display: 'flex', gap: 1, alignItems: 'flex-end' }}>
         <TextField
           fullWidth
-          placeholder={chatExists ? "Type your message here..." : "Start by typing a message..."}
+          placeholder="Type your message..."
           value={newMessage}
           onChange={(e) => setNewMessage(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyPress={(e) => e.key === 'Enter' && !e.shiftKey && handleSendMessage()}
           multiline
           maxRows={4}
           variant="outlined"
           size="small"
-          disabled={!chatExists}
-          sx={{
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '24px',
-              bgcolor: '#f5f7fb',
-              '&:hover': {
-                bgcolor: '#f0f2f5',
-              },
-              '&.Mui-focused': {
-                bgcolor: 'white',
-                '& fieldset': {
-                  borderColor: '#6366f1 !important',
-                },
-              },
-              '&.Mui-disabled': {
-                bgcolor: '#f9fafb',
-              }
-            },
-          }}
+          disabled={sending}
         />
         <IconButton
           onClick={handleSendMessage}
-          disabled={!newMessage.trim() || sending || !chatExists}
-          sx={{
-            bgcolor: '#6366f1',
-            color: 'white',
-            width: 44,
-            height: 44,
-            '&:hover': { 
-              bgcolor: '#4f46e5',
-            },
-            '&:disabled': { 
-              bgcolor: '#e0e0e0', 
-              color: '#9e9e9e',
-            },
-            transition: 'all 0.2s',
-          }}
+          disabled={!newMessage.trim() || sending}
+          sx={{ bgcolor: '#6366f1', color: 'white', '&:hover': { bgcolor: '#4f46e5' }, '&:disabled': { bgcolor: '#e0e0e0' } }}
         >
-          {sending ? (
-            <CircularProgress size={20} color="inherit" />
-          ) : (
-            <SendIcon />
-          )}
+          {sending ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
         </IconButton>
       </Box>
     </Box>

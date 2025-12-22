@@ -30,7 +30,7 @@ export default function StudentChatPage() {
               mb: 2,
             }}
           >
-            Student Chat (Hardcoded)
+           
           </Typography>
           <Typography
             variant="h6"
@@ -51,7 +51,7 @@ export default function StudentChatPage() {
               mx: "auto" 
             }}
           >
-            Simple hardcoded chat solution for testing
+      
           </Typography>
         </Box>
 
@@ -73,7 +73,7 @@ export default function StudentChatPage() {
         {/* API Info */}
         <Box sx={{ mt: 4, p: 3, bgcolor: '#f8fafc', borderRadius: 2 }}>
           <Typography variant="h6" gutterBottom color="#6366f1">
-            API Endpoints (Hardcoded):
+           
           </Typography>
           <Box component="ul" sx={{ pl: 2 }}>
             <li>

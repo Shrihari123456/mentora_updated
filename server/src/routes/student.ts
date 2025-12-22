@@ -1,18 +1,18 @@
 import { Router } from "express";
 import {
-  getStudents,
-  getStudentById,
-  createStudent,
-  updateStudent,
-  deleteStudent,
-  getStudentByUsn,
-  getStudentBySrNo,
+  // getStudents,
+  // getStudentById,
+  // createStudent,
+  // updateStudent,
+  // deleteStudent,
+  // getStudentByUsn,
+  // getStudentBySrNo,
   loginStudent,
-  updateStudentPassword,
-  getUnassignedStudents,
-  updateStudentBySrNo,
-
-  addStudentMarks
+  // updateStudentPassword,
+  // getUnassignedStudents,
+  // updateStudentBySrNo,
+  // addStudentMarks,
+  resetStudentPassword // Add this import
 } from "../controllers/student";
 
 const studRouter = Router();
@@ -31,11 +31,12 @@ const studRouter = Router();
  *               type: array
  *               items:
  *                 $ref: '#/components/schemas/Student'
- */
-studRouter.get("/students", getStudents);
-//get all unassigned students
-/**@swagger
- * /students-unassigned:
+//  */
+// studRouter.get("/", getStudents);
+
+/**
+ * @swagger
+ * /students/unassigned:
  *   get:
  *     summary: Retrieve a list of unassigned students
  *     parameters:
@@ -61,7 +62,7 @@ studRouter.get("/students", getStudents);
  *       404:
  *         description: No unassigned students found
  */
-studRouter.get("/students-unassigned", getUnassignedStudents);
+// studRouter.get("/unassigned", getUnassignedStudents);
 
 /**
  * @swagger
@@ -85,16 +86,55 @@ studRouter.get("/students-unassigned", getUnassignedStudents);
  *       404:
  *         description: Student not found
  */
+// studRouter.get("/:id", getStudentById);
 
-//fetch by srNo
+/**
+ * @swagger
+ * /students/srNo/{srNo}:
+ *   get:
+ *     summary: Retrieve a student by SR Number
+ *     parameters:
+ *       - in: path
+ *         name: srNo
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student's SR Number
+ *     responses:
+ *       200:
+ *         description: A student record
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Student'
+ *       404:
+ *         description: Student not found
+ */
+// studRouter.get("/srNo/:srNo", getStudentBySrNo);
 
-studRouter.get("/students/srNo/:srNo", getStudentBySrNo);
-
-//fetch by usn
-
-studRouter.get("/students/usn/:usn", getStudentByUsn);
-
-studRouter.get("/students/:id", getStudentById);
+/**
+ * @swagger
+ * /students/usn/{usn}:
+ *   get:
+ *     summary: Retrieve a student by USN
+ *     parameters:
+ *       - in: path
+ *         name: usn
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student's USN
+ *     responses:
+ *       200:
+ *         description: A student record
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Student'
+ *       404:
+ *         description: Student not found
+//  */
+// studRouter.get("/usn/:usn", getStudentByUsn);
 
 /**
  * @swagger
@@ -117,7 +157,7 @@ studRouter.get("/students/:id", getStudentById);
  *       400:
  *         description: Bad request
  */
-studRouter.post("/students", createStudent);
+// studRouter.post("/", createStudent);
 
 /**
  * @swagger
@@ -149,10 +189,39 @@ studRouter.post("/students", createStudent);
  *       400:
  *         description: Bad request
  */
+// studRouter.put("/:id", updateStudent);
 
-studRouter.put("/students/:id", updateStudent);
-
-studRouter.put("/students/srNo/:srNo", updateStudentBySrNo);
+/**
+ * @swagger
+ * /students/srNo/{srNo}:
+ *   put:
+ *     summary: Update a student by SR Number
+ *     parameters:
+ *       - in: path
+ *         name: srNo
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student's SR Number
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Student'
+ *     responses:
+ *       200:
+ *         description: The updated student
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Student'
+ *       404:
+ *         description: Student not found
+ *       400:
+ *         description: Bad request
+ */
+// studRouter.put("/srNo/:srNo", updateStudentBySrNo);
 
 /**
  * @swagger
@@ -172,20 +241,174 @@ studRouter.put("/students/srNo/:srNo", updateStudentBySrNo);
  *       404:
  *         description: Student not found
  */
+// studRouter.delete("/:id", deleteStudent);
 
-studRouter.delete("/students/:id", deleteStudent);
-
-// login student
-
+/**
+ * @swagger
+ * /students/login:
+ *   post:
+ *     summary: Student login with SR Number and password
+ *     description: Password should be the student's first name in lowercase
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - srNo
+ *               - password
+ *             properties:
+ *               srNo:
+ *                 type: string
+ *                 example: "CA24771"
+ *                 description: Student's SR Number
+ *               password:
+ *                 type: string
+ *                 example: "ashika"
+ *                 description: Student's first name in lowercase
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Login successful"
+ *                 student:
+ *                   $ref: '#/components/schemas/Student'
+ *                 role:
+ *                   type: string
+ *                   example: "student"
+ *       400:
+ *         description: Missing credentials
+ *       401:
+ *         description: Invalid credentials
+ *       404:
+ *         description: Student not found
+ *       500:
+ *         description: Server error
+ */
 studRouter.post("/students/login", loginStudent);
 
-// update password
+/**
+ * @swagger
+ * /students/reset-password:
+ *   post:
+ *     summary: Reset student password to first name
+ *     description: Resets password to the student's first name (for imported students)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - srNo
+ *             properties:
+ *               srNo:
+ *                 type: string
+ *                 example: "CA24771"
+ *                 description: Student's SR Number
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Password reset to first name successfully"
+ *                 hint:
+ *                   type: string
+ *                   example: "Password is: ashika"
+ *       400:
+ *         description: SR Number is required
+ *       404:
+ *         description: Student not found
+ *       500:
+ *         description: Server error
+ */
+studRouter.post("/reset-password", resetStudentPassword);
 
-studRouter.put("/students/password/:id", updateStudentPassword);
-// add student marks
-//  studRouter.post("/students/marks", addStudentMarks);
+/**
+ * @swagger
+ * /students/password/{id}:
+ *   put:
+ *     summary: Update student password
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The student ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - oldPassword
+ *               - newPassword
+ *             properties:
+ *               oldPassword:
+ *                 type: string
+ *                 example: "ashika"
+ *                 description: Current password (first name)
+ *               newPassword:
+ *                 type: string
+ *                 example: "newpassword123"
+ *                 description: New password
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *       400:
+ *         description: Bad request
+ *       401:
+ *         description: Invalid old password
+ *       404:
+ *         description: Student not found
+ *       500:
+ *         description: Server error
+ */
+// studRouter.put("/password/:id", updateStudentPassword);
 
-
-
+/**
+ * @swagger
+ * /students/marks:
+ *   post:
+ *     summary: Add student marks
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               semesterData:
+ *                 type: object
+ *                 description: Semester marks data
+ *     responses:
+ *       200:
+ *         description: Marks added successfully
+ *       400:
+ *         description: Invalid data format
+ *       500:
+ *         description: Server error
+ */
+// studRouter.post("/marks", addStudentMarks);
 
 export default studRouter;

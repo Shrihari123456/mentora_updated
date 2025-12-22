@@ -126,7 +126,7 @@ export const processTextQuery = async (req: Request, res: Response) => {
       });
     }
 
-    const apiKey = 'AIzaSyDgYMkxHuUEyw3rBlJBli04pFFPcYAvQvk';
+    const apiKey = 'AIzaSyD0vwOZryNbKp2uraCPOfGPohmsqXdjBm8';
     
     const prompt = `You are a MongoDB query expert. Convert natural language to MongoDB aggregation pipeline JSON and provide a detailed explanation.
 

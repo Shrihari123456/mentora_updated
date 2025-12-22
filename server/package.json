@@ -2,6 +2,7 @@
   "name": "server",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "import-students": "bun run scripts/importStudents.ts",
     "seed": "bun run src/utils/seed.ts",
     "start": "bun run src/index.ts"
   },
@@ -10,20 +11,25 @@
     "axios": "^1.10.0",
     "cheerio": "^1.1.0",
     "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
     "express": "^4.21.1",
     "express-rate-limit": "^7.5.1",
     "mongoose": "^8.8.2",
     "mongoose-paginate-v2": "^1.9.1",
     "morgan": "^1.10.0",
+    "multer": "^2.0.2",
     "nodemailer": "^7.0.10",
     "papaparse": "^5.5.3",
-    "uuid": "^11.1.0"
+    "pdf-parse": "^2.4.5",
+    "uuid": "^11.1.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@types/bun": "latest",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.0",
     "@types/morgan": "^1.9.9",
+    "@types/multer": "^2.0.0",
     "@types/nodemailer": "^7.0.4",
     "@types/papaparse": "^5.3.16",
     "@types/swagger-jsdoc": "^6.0.4",

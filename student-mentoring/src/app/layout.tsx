@@ -1,10 +1,13 @@
+// src/app/layout.tsx
+'use client'; // Add this to make it a client component
+
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter";
 import { Roboto } from "next/font/google";
 import { ThemeProvider } from "@mui/material/styles";
-import { Metadata } from "next";
 import { Toaster } from "sonner";
 import theme from "../theme";
 import "./globals.css";
+import { SessionProvider } from 'next-auth/react';
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -13,10 +16,8 @@ const roboto = Roboto({
   variable: "--font-roboto",
 });
 
-export const metadata: Metadata = {
-  title: "JSS-STU Student Mentoring",
-  description: "JSS-STU Student Mentoring is a student mentoring platform.",
-};
+// Remove metadata export since client components can't export metadata
+// You'll need to handle metadata differently
 
 export default function RootLayout({
   children,
@@ -26,12 +27,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${roboto.variable}`}>
-        <AppRouterCacheProvider>
-          <ThemeProvider theme={theme}>
-            {children}
-            <Toaster richColors />
-          </ThemeProvider>
-        </AppRouterCacheProvider>
+        <SessionProvider>
+          <AppRouterCacheProvider>
+            <ThemeProvider theme={theme}>
+              {children}
+              <Toaster richColors />
+            </ThemeProvider>
+          </AppRouterCacheProvider>
+        </SessionProvider>
       </body>
     </html>
   );

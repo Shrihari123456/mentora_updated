@@ -9,6 +9,7 @@ import {
   getStudents,
   loginMentor,
   updatePassword,
+  getStudentsByEmpId
 } from "../controllers/mentor";
 
 const mentRouter = Router();
@@ -250,4 +251,5 @@ mentRouter.post("/mentors/login", loginMentor);
  */
 mentRouter.put("/mentors/updatePassword/:id", updatePassword);
 
+mentRouter.get('/mentors/students/emp/:empId', getStudentsByEmpId);
 export default mentRouter;

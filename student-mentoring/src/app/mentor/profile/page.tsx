@@ -1,4 +1,8 @@
-import { auth, signOut } from "@/auth";
+// app/mentor/profile/page.jsx
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   Box,
   Typography,
@@ -7,22 +11,93 @@ import {
   Paper,
   Button,
   IconButton,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { redirect } from "next/navigation";
+import LogoutIcon from "@mui/icons-material/Logout";
 
-export default async function MentorProfile() {
-  const session = await auth();
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
-  if (!session) {
-    throw new Error("User not authenticated.");
+export default function MentorProfile() {
+  const router = useRouter();
+  const [mentorData, setMentorData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Check if mentor is logged in
+    const mentor = JSON.parse(localStorage.getItem('mentor') || '{}');
+    const role = localStorage.getItem('role');
+    
+    if (!mentor.empId || role !== 'mentor') {
+      router.push('/login');
+      return;
+    }
+    
+    // Use data from localStorage or fetch fresh data
+    if (mentor.empId && mentor.name) {
+      setMentorData(mentor);
+      setLoading(false);
+    } else {
+      // Fetch fresh data if needed
+      fetchMentorData(mentor.empId);
+    }
+  }, [router]);
+
+  const fetchMentorData = async (empId) => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/mentors/${empId}`);
+      
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success) {
+          setMentorData(data.mentor);
+          // Update localStorage with fresh data
+          localStorage.setItem('mentor', JSON.stringify(data.mentor));
+        } else {
+          setError(data.message || 'Failed to load mentor data');
+        }
+      } else {
+        setError('Failed to fetch mentor data');
+      }
+    } catch (error) {
+      console.error('Error fetching mentor data:', error);
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('mentor');
+    localStorage.removeItem('role');
+    localStorage.removeItem('isAuthenticated');
+    // Clear cookies
+    document.cookie = 'user-role=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    document.cookie = 'user-id=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+    router.push('/login');
+  };
+
+  const handleBack = () => {
+    router.push('/mentor');
+  };
+
+  if (loading) {
+    return (
+      <Box
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        sx={{ minHeight: "100vh", bgcolor: "#f4f5f7" }}
+      >
+        <CircularProgress sx={{ color: '#3f51b5' }} />
+      </Box>
+    );
   }
 
-  const res = await fetch(
-    `https://student-mentoring-server.onrender.com/mentors/empId/${session.user.userid}`
-  );
-
-  if (!res.ok) {
+  if (error) {
     return (
       <Box
         display="flex"
@@ -35,18 +110,27 @@ export default async function MentorProfile() {
           sx={{
             padding: 4,
             textAlign: "center",
-            color: "#d32f2f",
             borderRadius: 2,
             maxWidth: 400,
           }}
         >
-          <Typography variant="h6">Error fetching profile!</Typography>
+          <Typography variant="h6" color="error" gutterBottom>
+            Error loading profile
+          </Typography>
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+          <Button 
+            variant="contained" 
+            onClick={() => router.push('/mentor/dashboard')}
+            sx={{ bgcolor: '#3f51b5' }}
+          >
+            Back to Dashboard
+          </Button>
         </Paper>
       </Box>
     );
   }
-
-  const data: Mentor = await res.json();
 
   return (
     <Box
@@ -57,34 +141,27 @@ export default async function MentorProfile() {
         minHeight: "100vh",
         padding: 3,
         background: "linear-gradient(135deg, #e3f2fd, #bbdefb)",
+        position: 'relative',
       }}
     >
-      {/*
-        Logout Button
-      */}
-      <form
-        action={async () => {
-          "use server";
-          redirect("/mentor");
+      {/* Back Button */}
+      <IconButton
+        onClick={handleBack}
+        sx={{
+          position: "absolute",
+          top: 16,
+          left: 16,
+          color: "#3f51b5",
+          backgroundColor: "#ffffff",
+          boxShadow: 2,
+          "&:hover": {
+            backgroundColor: "#f0f0f0",
+          },
         }}
       >
-        <IconButton
-          type="submit" // Define this function for navigation logic
-          sx={{
-            position: "absolute", // Positioning at the top left
-            top: 16, // Slight margin from top
-            left: 16, // Slight margin from left
-            color: "#3f51b5", // Match the theme
-            backgroundColor: "#ffffff",
-            boxShadow: 2,
-            "&:hover": {
-              backgroundColor: "#f0f0f0", // Slight hover effect
-            },
-          }}
-        >
-          <ArrowBackIcon />
-        </IconButton>
-      </form>
+        <ArrowBackIcon />
+      </IconButton>
+
       <Paper
         elevation={5}
         sx={{
@@ -95,28 +172,20 @@ export default async function MentorProfile() {
           boxShadow: "0px 8px 20px rgba(0,0,0,0.2)",
         }}
       >
-        {/* Profile Title */}
+        {/* Logout Button */}
         <Box
           display="flex"
           justifyContent="flex-end"
           width="100%"
-          sx={{
-            marginBottom: 2,
-          }}
+          sx={{ marginBottom: 2 }}
         >
-          <form
-            action={async () => {
-              "use server";
-              await signOut({
-                redirect: true,
-                redirectTo: "/login",
-              });
-            }}
+          <Button 
+            variant="outlined" 
+            startIcon={<LogoutIcon />}
+            onClick={handleLogout}
           >
-            <Button variant="outlined" type="submit">
-              Logout
-            </Button>
-          </form>
+            Logout
+          </Button>
         </Box>
 
         <Typography
@@ -134,32 +203,63 @@ export default async function MentorProfile() {
         </Typography>
 
         {/* Profile Details */}
-        <Grid container spacing={3}>
-          {[
-            { label: "Name", value: data.name },
-            { label: "Employee ID", value: data.empId },
-            { label: "Designation", value: data.designation },
-            { label: "Department", value: data.dept },
-            { label: "Email", value: data.email },
-            { label: "Phone", value: data.phone },
-          ].map((field, index) => (
-            <Grid item xs={12} sm={6} key={index}>
-              <TextField
-                label={field.label}
-                value={field.value || ""}
-                fullWidth
-                InputProps={{ readOnly: true }}
-                sx={{
-                  "& .MuiInputBase-root": {
-                    backgroundColor: "#f9f9f9",
-                    borderRadius: 2,
-                  },
-                  "& .MuiInputLabel-root": { fontWeight: 500 },
-                }}
-              />
+        {mentorData && (
+          <Grid container spacing={3}>
+            {[
+              { label: "Name", value: mentorData.name, field: 'name' },
+              { label: "Employee ID", value: mentorData.empId || mentorData.empid, field: 'empId' },
+              { label: "Designation", value: mentorData.designation, field: 'designation' },
+              { label: "Department", value: mentorData.dept || mentorData.department, field: 'dept' },
+              { label: "Email", value: mentorData.email, field: 'email' },
+              { label: "Phone", value: mentorData.phone, field: 'phone' },
+              { label: "Qualification", value: mentorData.qualification, field: 'qualification' },
+              { label: "Experience", value: mentorData.experience, field: 'experience' },
+            ].map((field, index) => (
+              <Grid item xs={12} sm={6} key={index}>
+                <TextField
+                  label={field.label}
+                  value={field.value || "Not available"}
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                  sx={{
+                    "& .MuiInputBase-root": {
+                      backgroundColor: "#f9f9f9",
+                      borderRadius: 2,
+                    },
+                    "& .MuiInputLabel-root": { fontWeight: 500 },
+                  }}
+                />
+              </Grid>
+            ))}
+          </Grid>
+        )}
+
+        {/* Additional Info */}
+        {mentorData && (
+          <Box sx={{ mt: 4, pt: 3, borderTop: 1, borderColor: 'divider' }}>
+            <Typography variant="h6" gutterBottom color="#3f51b5">
+              Additional Information
+            </Typography>
+            <Grid container spacing={2}>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Date of Joining"
+                  value={mentorData.dateOfJoining || "Not available"}
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Specialization"
+                  value={mentorData.specialization || "Not available"}
+                  fullWidth
+                  InputProps={{ readOnly: true }}
+                />
+              </Grid>
             </Grid>
-          ))}
-        </Grid>
+          </Box>
+        )}
       </Paper>
     </Box>
   );
