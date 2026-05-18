@@ -1,9 +1,15 @@
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
-import { Request, Response } from 'express';
 
 const markSchema = new mongoose.Schema({
-  usn: String,
+  sr: {
+    type: String,
+    default: null
+  },
+  usn: {
+    type: String,
+    default: null
+  },
   semester: Number,
   subject: String,
   cie1: {

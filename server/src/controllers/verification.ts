@@ -24,14 +24,18 @@ export const createVerificationRequest = async (
   res: Response
 ): Promise<void> => {
   try {
-    const { usn, semester, subjects, message } = req.body;
+    const { sr, usn, semester, subjects, message } = req.body;
 
-    console.log("✅ Received Payload:", { usn, semester, subjects, message });
+    console.log("✅ Received Payload:", { sr, usn, semester, subjects, message });
 
-    if (!usn?.trim() || !semester || !subjects?.length || !message?.trim()) {
+    // ✅ Validate: At least one of SR or USN is required
+    const studentIdentifier = sr || usn;
+    
+    if (!studentIdentifier || !studentIdentifier.trim()) {
       res.status(400).json({
-        error: "All fields are required",
+        error: "Either SR or USN is required",
         received: {
+          sr: !!sr,
           usn: !!usn,
           semester: !!semester,
           subjects: !!subjects?.length,
@@ -41,27 +45,68 @@ export const createVerificationRequest = async (
       return;
     }
 
-    const usnTrimmed = usn.trim().toUpperCase();
-
-    // ✅ Check if marks exist for that USN to confirm student exists
-    const markCheck = await Mark.findOne({ usn: usnTrimmed });
-    if (!markCheck) {
-      console.log("❌ No marks found — student does not exist in Marks schema");
-      res.status(404).json({ error: "Student not found (in marks database)" });
+    // ✅ Validate required fields
+    if (!subjects?.length || !message?.trim()) {
+      res.status(400).json({
+        error: "Subjects and message are required (SR or USN required, semester optional)",
+        received: {
+          sr: !!sr,
+          usn: !!usn,
+          semester: !!semester,
+          subjects: !!subjects?.length,
+          message: !!message
+        }
+      });
       return;
     }
 
-    // ✅ Now fetch marks for the selected subjects
-    const marks = await Mark.find({
-      usn: usnTrimmed,
-      semester,
-      subject: { $in: subjects }
-    });
+    const studentId = studentIdentifier.trim().toUpperCase();
+    const isUSN = !!usn; // If usn was provided, treat as USN
 
-    console.log(`📚 Found ${marks.length} marks for subjects:`, subjects);
+    // ✅ Check if marks exist using SR or USN
+    let markQuery: any = {};
+    if (isUSN) {
+      markQuery.usn = studentId;
+    } else {
+      markQuery.sr = studentId;
+    }
+    
+    if (semester) {
+      markQuery.semester = semester;
+    }
 
-    if (marks.length !== subjects.length) {
-      const missing = subjects.filter(sub => !marks.some(m => m.subject === sub));
+    const markCheck = await Mark.findOne(markQuery);
+    
+    if (!markCheck) {
+      console.log("❌ No marks found for:", studentId);
+      res.status(404).json({ 
+        error: `Student not found with ${isUSN ? 'USN' : 'SR'}: ${studentId}` 
+      });
+      return;
+    }
+
+    // ✅ Build marks query
+    const marksQuery: any = {};
+    if (isUSN) {
+      marksQuery.usn = studentId;
+    } else {
+      marksQuery.sr = studentId;
+    }
+    
+    if (semester) {
+      marksQuery.semester = semester;
+    }
+    
+    if (subjects && subjects.length > 0) {
+      marksQuery.subject = { $in: subjects };
+    }
+
+    const marks = await Mark.find(marksQuery);
+
+    // ✅ Check all subjects exist
+    if (semester && marks.length !== subjects.length) {
+      const foundSubjects = marks.map(m => m.subject);
+      const missing = subjects.filter(sub => !foundSubjects.includes(sub));
       res.status(400).json({
         error: "Missing marks for subjects",
         missingSubjects: missing
@@ -69,16 +114,25 @@ export const createVerificationRequest = async (
       return;
     }
 
-    // ✅ Prevent duplicate pending request
-    const existingRequest = await VerificationRequest.findOne({
-      usn: usnTrimmed,
-      semester,
+    // ✅ Check for duplicate pending request
+    const duplicateQuery: any = {
       subjects: { $all: subjects },
       status: 'pending'
-    });
+    };
+    
+    if (isUSN) {
+      duplicateQuery.usn = studentId;
+    } else {
+      duplicateQuery.sr = studentId;
+    }
+    
+    if (semester) {
+      duplicateQuery.semester = semester;
+    }
+
+    const existingRequest = await VerificationRequest.findOne(duplicateQuery);
 
     if (existingRequest) {
-      console.log("⚠️ Duplicate verification request already exists:", existingRequest._id);
       res.status(409).json({
         error: "Duplicate request exists",
         requestId: existingRequest._id
@@ -86,25 +140,35 @@ export const createVerificationRequest = async (
       return;
     }
 
-    // ✅ Create new verification request (student field removed)
-    const newRequest = await VerificationRequest.create({
-      usn: usnTrimmed,
-      semester,
+    // ✅ Create verification request
+    const requestData: any = {
       subjects,
       message: message.trim(),
       status: 'pending',
       createdAt: new Date()
-    });
+    };
+    
+    // Store the identifier used
+    if (isUSN) {
+      requestData.usn = studentId;
+    } else {
+      requestData.sr = studentId;
+    }
+    
+    if (semester) {
+      requestData.semester = semester;
+    }
 
-    console.log("✅ Verification request created:", newRequest._id);
+    const newRequest = await VerificationRequest.create(requestData);
 
     res.status(201).json({
       success: true,
       message: "Verification request submitted successfully",
       data: {
         _id: newRequest._id,
-        usn: newRequest.usn,
-        semester: newRequest.semester,
+        sr: newRequest.sr || null,
+        usn: newRequest.usn || null,
+        semester: newRequest.semester || null,
         subjects: newRequest.subjects,
         message: newRequest.message,
         status: newRequest.status,
@@ -145,7 +209,7 @@ export const getStudentVerificationRequests = async (
 // import { Request, Response } from 'express';
 // import Marks from '../models/marks'; // Adjust as needed
 
-// In your verification controller
+// Admin gets all verification requests
 export const getVerificationRequestsFromMarks = async (req: Request, res: Response): Promise<void> => {
   try {
     const { page = 1, limit = 10, status = '' } = req.query;
@@ -167,15 +231,17 @@ export const getVerificationRequestsFromMarks = async (req: Request, res: Respon
       .skip((pageNum - 1) * limitNum)
       .limit(limitNum);
 
+    // ✅ FIXED: Correctly map the fields
     res.status(200).json({
       success: true,
       data: requests.map(request => ({
         _id: request._id,
-        usn: request.usn, // Ensure USN is included
-        message: request.message, // Ensure message is included
-        status: request.status,
-        subjects: request.subjects,
+        usn: request.usn || null,      // Keep USN if it exists
+        sr: request.sr || null,        // Keep SR if it exists
         semester: request.semester,
+        subjects: request.subjects,
+        message: request.message,
+        status: request.status,
         createdAt: request.createdAt,
         processedAt: request.processedAt,
         adminFeedback: request.adminFeedback
@@ -197,18 +263,33 @@ export const getVerificationRequestsFromMarks = async (req: Request, res: Respon
 
 
 // Get single verification request details
+// Get single verification request details
 export const getVerificationRequestById = async (req: Request, res: Response) => {
   try {
     const { requestId } = req.params;
 
-    const request = await VerificationRequest.findById(requestId)
-      .populate('student', 'usn name email');
+    const request = await VerificationRequest.findById(requestId);
 
     if (!request) {
       return res.status(404).json({ error: 'Verification request not found' });
     }
 
-    res.status(200).json({ success: true, data: request });
+    // ✅ Return both SR and USN if they exist
+    res.status(200).json({ 
+      success: true, 
+      data: {
+        _id: request._id,
+        usn: request.usn || null,
+        sr: request.sr || null,
+        semester: request.semester,
+        subjects: request.subjects,
+        message: request.message,
+        status: request.status,
+        createdAt: request.createdAt,
+        processedAt: request.processedAt,
+        adminFeedback: request.adminFeedback
+      }
+    });
   } catch (error) {
     console.error('Error fetching verification request by ID:', error);
     res.status(500).json({ error: 'Failed to fetch request details' });

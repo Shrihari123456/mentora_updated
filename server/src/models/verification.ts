@@ -1,13 +1,14 @@
 import mongoose, { Document } from 'mongoose';
-import mongoosePaginate from 'mongoose-paginate-v2'; // ✅ Add this
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 export interface IVerificationRequest extends Document {
-  usn: string;
+  usn?: string;        // ← optional now
+  sr?: string;         // ← add this
   semester?: number;
   subjects: string[];
   message: string;
   status: 'pending' | 'approved' | 'rejected';
-  student: mongoose.Types.ObjectId;
+  student?: mongoose.Types.ObjectId; // ← optional since SR students won't have this
   adminFeedback?: string;
   processedBy?: mongoose.Types.ObjectId;
   processedAt?: Date;
@@ -17,7 +18,8 @@ export interface IVerificationRequest extends Document {
 
 const verificationRequestSchema = new mongoose.Schema(
   {
-    usn: String,
+    usn: { type: String, default: null },   // ← was just String
+    sr:  { type: String, default: null },   // ← ADD THIS
     semester: Number,
     subjects: [String],
     message: String,
@@ -34,7 +36,6 @@ const verificationRequestSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// ✅ Plug in pagination
 verificationRequestSchema.plugin(mongoosePaginate);
 
 const VerificationRequest = mongoose.model<IVerificationRequest, mongoose.PaginateModel<IVerificationRequest>>(

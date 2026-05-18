@@ -27,6 +27,7 @@ import adminRouter from "./routes/admin";
 import verificationRouter from "./routes/verification";
 import chatbotRouter from "./routes/chatbot"
 import studentReportRouter from "./routes/studentReport"
+import queryRouter from "./routes/query"
 
 // Health check
 app.get('/', (req, res) => {
@@ -47,6 +48,8 @@ app.use("/api/admin", adminRouter);
 app.use("/api/verification", verificationRouter);
 app.use('/api/chatbot', chatbotRouter);
 app.use('/api/report',studentReportRouter)
+app.use('/api/query',queryRouter)
+
 // 404 handler
 app.use((req, res) => {
   res.status(404).json({ 

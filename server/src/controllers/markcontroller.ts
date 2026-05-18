@@ -237,20 +237,20 @@ export const uploadCandidateMarks = async (
 
 export const getMarksByUsn = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { usn, semester } = req.query;
+    const { usn, sr, semester } = req.query;
 
-    if (!usn) {
-      res.status(400).json({ message: "USN parameter is required" });
+    if (!sr && !usn) {
+      res.status(400).json({ message: "Either sr or usn parameter is required" });
       return;
     }
 
-    // Convert USN to uppercase for consistency
-    const studentUsn = usn.toString().toUpperCase();
+    const query: any = {};
+    if (sr) {
+      query.sr = sr.toString().trim();
+    } else {
+      query.usn = usn!.toString().toUpperCase();
+    }
 
-    // Build query object
-    const query: any = { usn: studentUsn };
-        
-    // Add semester filter if provided
     if (semester) {
       const semesterNumber = parseInt(semester as string);
       if (isNaN(semesterNumber) || semesterNumber < 1 || semesterNumber > 8) {
@@ -260,70 +260,64 @@ export const getMarksByUsn = async (req: Request, res: Response): Promise<void> 
       query.semester = semesterNumber;
     }
 
-    // Fetch marks from Mark collection
     const marks = await Mark.find(query).sort({ semester: 1, subject: 1 });
 
     if (!marks || marks.length === 0) {
       res.status(404).json({
         message: semester
-          ? `No marks found for USN ${studentUsn} in semester ${semester}`
-          : `No marks found for USN ${studentUsn}`
+          ? `No marks found for ${sr ? `SR ${sr}` : `USN ${usn}`} in semester ${semester}`
+          : `No marks found for ${sr ? `SR ${sr}` : `USN ${usn}`}`
       });
       return;
     }
 
-    // If specific semester requested, return flat structure
+    const identifier = sr
+      ? { sr: sr.toString().trim() }
+      : { usn: usn!.toString().toUpperCase() };
+
     if (semester) {
       const subjects = marks.map(mark => ({
         subject: mark.subject,
         cie1: mark.cie1,
         cie2: mark.cie2,
-        cie3: mark.cie3
+        cie3: mark.cie3,
       }));
 
       res.status(200).json({
-        usn: studentUsn,
+        ...identifier,
         semester: parseInt(semester as string),
-        subjects: subjects
+        subjects,
       });
       return;
     }
 
-    // If no semester specified, group by semester
-   const semesterGroups = marks.reduce((acc, mark) => {
-  // Ensure semester is a defined number
-  const semesterKey = mark.semester;
-  if (typeof semesterKey !== 'number') {
-    return acc; // skip invalid entries
-  }
+    const semesterGroups = marks.reduce((acc, mark) => {
+      const semesterKey = mark.semester;
+      if (typeof semesterKey !== 'number') return acc;
+      if (!acc[semesterKey]) acc[semesterKey] = [];
+      acc[semesterKey].push({
+        subject: mark.subject,
+        cie1: mark.cie1,
+        cie2: mark.cie2,
+        cie3: mark.cie3,
+      });
+      return acc;
+    }, {} as Record<number, any[]>);
 
-  if (!acc[semesterKey]) {
-    acc[semesterKey] = [];
-  }
-  
-  acc[semesterKey].push({
-    subject: mark.subject,
-    cie1: mark.cie1,
-    cie2: mark.cie2,
-    cie3: mark.cie3
-  });
-  
-  return acc;
-}, {} as Record<number, any[]>);
-
-    // Convert to array format
-    const semesters = Object.keys(semesterGroups).map(sem => ({
-      semester: parseInt(sem),
-      subjects: semesterGroups[parseInt(sem)]
-    })).sort((a, b) => a.semester - b.semester);
+    const semesters = Object.keys(semesterGroups)
+      .map(sem => ({
+        semester: parseInt(sem),
+        subjects: semesterGroups[parseInt(sem)],
+      }))
+      .sort((a, b) => a.semester - b.semester);
 
     res.status(200).json({
-      usn: studentUsn,
-      semesters: semesters
+      ...identifier,
+      semesters,
     });
 
   } catch (error) {
-    console.error('Error fetching marks by USN:', error);
+    console.error('Error fetching marks:', error);
     res.status(500).json({
       message: "Internal server error",
       error: process.env.NODE_ENV === 'development' ? (error as Error).message : 'Something went wrong'

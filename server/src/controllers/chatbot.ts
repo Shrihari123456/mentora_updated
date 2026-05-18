@@ -5,7 +5,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Initialize Gemini with file support
-const genAI = new GoogleGenerativeAI( 'AIzaSyD0vwOZryNbKp2uraCPOfGPohmsqXdjBm8');
+const genAI = new GoogleGenerativeAI( 'AIzaSyCoWsuWWURiT55UOzBnw0utyrnt0M-TmVQ');
 const model = genAI.getGenerativeModel({ 
   model: "gemini-2.5-flash",
   generationConfig: {

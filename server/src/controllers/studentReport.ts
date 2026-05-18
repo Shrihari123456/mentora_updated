@@ -1,7 +1,7 @@
 import Student from '../models/student';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-const genAI = new GoogleGenerativeAI('AIzaSyD0vwOZryNbKp2uraCPOfGPohmsqXdjBm8');
+const genAI = new GoogleGenerativeAI('AIzaSyCoWsuWWURiT55UOzBnw0utyrnt0M-TmVQ');
 const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
 // Function to parse natural language query to MongoDB filters
@@ -17,8 +17,8 @@ async function parseQueryToFilters(naturalLanguageQuery) {
     1. name (string) - student's full name
     2. section (string) - class section like "A", "B", "C"
     3. admissionYear (number) - year of admission like 2023, 2024
-    4. bloodGroup (string) - blood groups like "O+", "A+", "B+", "AB+", "O-", etc.
-    5. residentType (string) - "Hosteller", "Day Scholar", "PG"
+    4. bloodGroup (string) - blood groups stored as "O +ve", "A +ve", "B +ve", "AB +ve", "O -ve", "A -ve", "B -ve", "AB -ve"
+    5. residentType (string) - "Hosteller", "Localite", "PG"
     6. permanentAddress (string) - hometown address
     7. presentAddress (string) - current address
     8. residentAddress (string) - accommodation address
@@ -35,7 +35,7 @@ async function parseQueryToFilters(naturalLanguageQuery) {
     1. For location queries (like "vijayanagar", "bangalore", "mysore"), search in ALL address fields
     2. For section queries, match exact section letter (case-insensitive)
     3. For height/weight queries, use appropriate operators ($gt, $lt, $gte, $lte)
-    4. For hobbies, use $in operator to check if array contains the hobby
+    4. For hobbies queries, ALWAYS use $elemMatch with $regex for case-insensitive partial matching. Never use $in.
     5. Use $regex with $options: "i" for case-insensitive text searches
     6. Combine multiple conditions with $and or $or as needed
     
@@ -50,7 +50,13 @@ async function parseQueryToFilters(naturalLanguageQuery) {
     Output: {"filters": {"admissionYear": 2023}, "explanation": "Searching for students admitted in 2023"}
     
     Query: "students who play cricket"
-    Output: {"filters": {"hobbies": {"$in": ["cricket"]}}, "explanation": "Searching for students who have cricket as a hobby"}
+    Output: {"filters": {"hobbies": {"$elemMatch": {"$regex": "cricket", "$options": "i"}}}, "explanation": "Searching for students who have cricket as a hobby"}
+    
+    Query: "students who like singing"
+    Output: {"filters": {"hobbies": {"$elemMatch": {"$regex": "singing", "$options": "i"}}}, "explanation": "Searching for students who like singing"}
+    
+    Query: "students interested in photography"
+    Output: {"filters": {"hobbies": {"$elemMatch": {"$regex": "photography", "$options": "i"}}}, "explanation": "Searching for students interested in photography"}
     
     Query: "tall students above 180cm"
     Output: {"filters": {"height": {"$gt": 180}}, "explanation": "Searching for students taller than 180cm"}
@@ -60,9 +66,14 @@ async function parseQueryToFilters(naturalLanguageQuery) {
     
     Query: "students in section A or B"
     Output: {"filters": {"$or": [{"section": "A"}, {"section": "B"}]}, "explanation": "Searching for students in section A or B"}
+    Query: "students with O positive blood group"
+Output: {"filters": {"bloodGroup": {"$regex": "O.*ve", "$options": "i"}}, "explanation": "Searching for students with O positive blood group"}
+
+Query: "O+ blood group students"  
+Output: {"filters": {"bloodGroup": {"$regex": "O.*\\+.*ve", "$options": "i"}}, "explanation": "Searching for students with O+ blood group"}
     
     Query: "day scholar students from bangalore"
-    Output: {"filters": {"$and": [{"residentType": "Day Scholar"}, {"$or": [{"permanentAddress": {"$regex": "bangalore", "$options": "i"}}, {"presentAddress": {"$regex": "bangalore", "$options": "i"}}, {"residentAddress": {"$regex": "bangalore", "$options": "i"}}]}]}, "explanation": "Searching for day scholar students from Bangalore"}
+    Output: {"filters": {"$and": [{"residentType": "Localite"}, {"$or": [{"permanentAddress": {"$regex": "bangalore", "$options": "i"}}, {"presentAddress": {"$regex": "bangalore", "$options": "i"}}, {"residentAddress": {"$regex": "bangalore", "$options": "i"}}]}]}, "explanation": "Searching for day scholar students from Bangalore"}
     
     Now convert this query: "${naturalLanguageQuery}"
     
@@ -126,7 +137,7 @@ async function parseQueryToFilters(naturalLanguageQuery) {
       };
     } else if (query.includes('day scholar') || query.includes('day-scholar')) {
       return {
-        filters: { residentType: 'Day Scholar' },
+        filters: { residentType: 'Localite' },
         explanation: 'Searching for day scholar students'
       };
     } else if (query.includes('pg') || query.includes('paying guest')) {
@@ -186,11 +197,14 @@ function sanitizeStudentData(student) {
   
   // Remove sensitive information
   const sensitiveFields = [
-    'aadharNumber', 'phone', 'studentEmail', 'email', 'password',
+    'aadharNumber', 'password',
     'father', 'mother', 'siblings', 'achievements', 'marks', 'semesters',
     'appointments', 'preferredMeetingTimes', 'isAvailableForMeeting',
     'familyIncomeStatus', 'entranceExamRank', 'previousInstitutionDetails',
-    'localGuardianDetails', 'hostelWardenDetails', '__v'
+    'localGuardianDetails', 'hostelWardenDetails',
+    'height', 'weight', 'usn', 'srNo', 'admissionYear',
+    'mediumOfInstruction', 'previousCourse', 'residentAddress',
+    'permanentAddress', 'presentAddress', '__v'
   ];
   
   sensitiveFields.forEach(field => {
@@ -284,6 +298,7 @@ export const studentSearch = async (req, res) => {
         .exec();
       
       const broaderSanitized = broaderResults.map(student => sanitizeStudentData(student));
+     
       
       if (broaderSanitized.length > 0) {
         return res.status(200).json({
