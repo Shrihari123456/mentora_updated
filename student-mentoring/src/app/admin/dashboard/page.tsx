@@ -80,7 +80,7 @@ export default function AdminDashboard() {
           {/* Query Report */}
           <Card
             title="Query Report"
-            description="Generate reports based on student queries and data analysis"
+            description="Generate reports based on student and mentor queries and data analysis"
             icon={<FiUsers size={24} />}
             bg="bg-purple-100"
             color="text-purple-600"
@@ -91,10 +91,10 @@ export default function AdminDashboard() {
 
         {/* Communication Section */}
         <div className="mt-12">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">💬 Communication Center</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-6"></h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {/* Chat with Students */}
-            <Card
+            {/* <Card
               title="Chat with Students"
               description="Send direct messages to any student in the system"
               icon={<FiMessageSquare size={24} />}
@@ -102,10 +102,10 @@ export default function AdminDashboard() {
               color="text-indigo-600"
               buttonColor="bg-indigo-600 hover:bg-indigo-700"
               onClick={() => router.push('/admin/chat/students')}
-            />
+            /> */}
 
             {/* Chat with Mentors */}
-            <Card
+            {/* <Card
               title="Chat with Mentors"
               description="Communicate with mentors regarding student progress"
               icon={<FiMessageSquare size={24} />}
@@ -113,7 +113,7 @@ export default function AdminDashboard() {
               color="text-teal-600"
               buttonColor="bg-teal-600 hover:bg-teal-700"
               onClick={() => router.push('/admin/chat/mentors')}
-            />
+            /> */}
           </div>
         </div>
 

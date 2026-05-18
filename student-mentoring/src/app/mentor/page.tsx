@@ -8,6 +8,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import ChatIcon from "@mui/icons-material/Chat";
+import Mail from "@mui/icons-material/Chat"
 import { auth } from "@/auth";
  // Import the client component
 // import EmailButtonWrapper from "./emailwrapper/page";
@@ -44,15 +45,22 @@ const Page = async () => {
       icon: <ChatIcon sx={iconStyle} />,
     },
     {
-      title: "View Your Mentor Profile",
-      description: "View your personal details",
-      path: "/mentor/profile",
-      icon: <PersonIcon sx={iconStyle} />,
+      title: "Mail mentees",
+      description: "Send and receive mails from ur assigned students.",
+      path: "/mentor/mentoremail",
+      icon: <Mail size={24} />,
     },
+
     {
       title: "Mentor Mentee Meet",
       description: "Schedule and manage meetings with your mentees.",
       path: "/mentor/accept",
+      icon: <PersonIcon sx={iconStyle} />,
+    },
+    {
+      title: "View Your Mentor Profile",
+      description: "View your personal details",
+      path: "/mentor/profile",
       icon: <PersonIcon sx={iconStyle} />,
     },
   ];

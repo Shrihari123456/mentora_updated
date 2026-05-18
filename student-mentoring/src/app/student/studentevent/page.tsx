@@ -1,227 +1,317 @@
-// 'use client';
+'use client';
 
-// import { useState, useEffect } from 'react';
-// import { FiCalendar, FiMapPin, FiExternalLink } from 'react-icons/fi';
+import { useState, useEffect } from 'react';
 
-// interface Event {
-//   id: string;
-//   title: string;
-//   description: string;
-//   start: string;
-//   end: string;
-//   location: string;
-//   type: string;
-//   url?: string;
-// }
+interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  location: string;
+  url: string;
+  source: string;
+  isFree: boolean;
+  category: string;
+  platform: string;
+}
 
-// export default function StudentEvents() {
-//   const [events, setEvents] = useState<Event[]>([]);
-//   const [location, setLocation] = useState('Bangalore');
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState('');
+export default function EventsPage() {
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [location, setLocation] = useState<{ lat: number; lng: number; name: string } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [manualLocation, setManualLocation] = useState('');
+  const [showManualInput, setShowManualInput] = useState(false);
 
-//   const fetchEvents = async (searchLocation: string) => {
-//     if (!searchLocation.trim()) {
-//       setError('Please enter a location');
-//       return;
-//     }
+  const PYTHON_SCRAPER_URL = 'http://localhost:5001'; // Direct Python server
 
-//     try {
-//       setLoading(true);
-//       setError('');
+  useEffect(() => {
+    getLocation();
+  }, []);
 
-//       console.log('Fetching events for location:', searchLocation);
+  const getLocation = () => {
+    setLoading(true);
+    
+    if (!navigator.geolocation) {
+      setError('Geolocation not supported');
+      setShowManualInput(true);
+      setLoading(false);
+      return;
+    }
 
-//       const res = await fetch(`http://localhost:8000/api/events/realtime?location=${encodeURIComponent(searchLocation)}`);
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        
+        // Get city name from coordinates
+        const cityName = await getCityName(latitude, longitude);
+        
+        setLocation({
+          lat: latitude,
+          lng: longitude,
+          name: cityName
+        });
+        setLoading(false);
+      },
+      () => {
+        setError('Unable to get location');
+        setShowManualInput(true);
+        setLoading(false);
+      }
+    );
+  };
+
+  const getCityName = async (lat: number, lng: number): Promise<string> => {
+    try {
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      );
+      const data = await response.json();
+      return data.address?.city || data.address?.town || data.address?.state || 'Your Area';
+    } catch {
+      return 'Your Location';
+    }
+  };
+
+  const handleManualSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!manualLocation.trim()) return;
+    
+    setLoading(true);
+    setError(null);
+    
+    try {
+      // Geocode the manual location
+      const geoResponse = await fetch(
+        `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(manualLocation)}&format=json&limit=1`
+      );
+      const geoData = await geoResponse.json();
       
-//       if (!res.ok) {
-//         const errorData = await res.json();
-//         throw new Error(errorData.message || 'Failed to fetch events');
-//       }
+      if (geoData && geoData.length > 0) {
+        setLocation({
+          lat: parseFloat(geoData[0].lat),
+          lng: parseFloat(geoData[0].lon),
+          name: manualLocation
+        });
+        setShowManualInput(false);
+      } else {
+        setError('Location not found. Please try again.');
+      }
+    } catch {
+      setError('Failed to find location');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-//       const data = await res.json();
-//       console.log('API Response:', data);
+  useEffect(() => {
+    if (location) {
+      fetchEvents();
+    }
+  }, [location]);
 
-//       if (data.success) {
-//         setEvents(data.data || []);
-//         if (data.data.length === 0) {
-//           setError('No events found for this location. Try a different city or region.');
-//         }
-//       } else {
-//         throw new Error(data.message || 'Failed to fetch events');
-//       }
-//     } catch (error) {
-//       console.error('Failed to fetch events:', error);
-//       setError(error instanceof Error ? error.message : 'Failed to fetch events');
-//       setEvents([]);
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
+ const fetchEvents = async () => {
+  if (!location) return;
+  
+  setLoading(true);
+  try {
+    const response = await fetch(`${PYTHON_SCRAPER_URL}/scrape-events`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        lat: location.lat,
+        lng: location.lng,
+        location: location.name,
+        event_type: 'offline'  // This filters for offline events only!
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (data.success) {
+      setEvents(data.events);
+    } else {
+      setError(data.error);
+    }
+  } catch (err) {
+    setError('Failed to connect to Python scraper');
+  } finally {
+    setLoading(false);
+  }
+};
 
-//   // Auto-fetch events on component mount
-//   useEffect(() => {
-//     fetchEvents(location);
-//   }, []); // Empty dependency array to run only once
+  const formatDate = (dateStr: string): string => {
+    return dateStr;
+  };
 
-//   const handleSearch = () => {
-//     fetchEvents(location);
-//   };
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+            🎓 Student Tech Events
+          </h1>
+          <p className="text-gray-600">
+            Hackathons & competitions from Unstop, Devfolio & HackerEarth
+          </p>
+        </div>
 
-//   const handleKeyPress = (e: React.KeyboardEvent) => {
-//     if (e.key === 'Enter') {
-//       handleSearch();
-//     }
-//   };
+        {/* Location Section */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="flex-1">
+              {location ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl">📍</span>
+                  <div>
+                    <p className="font-medium text-gray-900">{location.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {location.lat.toFixed(4)}°, {location.lng.toFixed(4)}°
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-gray-500">Click below to get your location</p>
+              )}
+            </div>
+            
+            <button
+              onClick={getLocation}
+              disabled={loading}
+              className="px-5 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50"
+            >
+              {loading ? 'Getting Location...' : '📍 Get My Location'}
+            </button>
+          </div>
+          
+          {error && (
+            <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-red-700 text-sm">{error}</p>
+              <button
+                onClick={() => setShowManualInput(true)}
+                className="text-sm text-blue-600 mt-1 hover:underline"
+              >
+                Enter location manually →
+              </button>
+            </div>
+          )}
+          
+          {showManualInput && (
+            <form onSubmit={handleManualSubmit} className="mt-4">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={manualLocation}
+                  onChange={(e) => setManualLocation(e.target.value)}
+                  placeholder="Enter city name (e.g., Bangalore, Mysore)"
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <button
+                  type="submit"
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                >
+                  Search
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
 
-//  // Corrected function in your frontend component
-// const getEventColor = (type: string) => {
-//   const lowerType = type?.toLowerCase() || ''; // Added null check and proper casing
-//   switch (lowerType) {
-//     case 'hackathon': return 'bg-purple-100 text-purple-800';
-//     case 'workshop': return 'bg-blue-100 text-blue-800';
-//     case 'seminar': return 'bg-green-100 text-green-800';
-//     case 'conference': return 'bg-yellow-100 text-yellow-800';
-//     default: return 'bg-gray-100 text-gray-800';
-//   }
-// };
-//   const formatDate = (dateString: string) => {
-//     try {
-//       const date = new Date(dateString);
-//       return date.toLocaleDateString('en-US', {
-//         weekday: 'short',
-//         month: 'short',
-//         day: 'numeric',
-//         year: 'numeric'
-//       });
-//     } catch {
-//       return 'Date TBD';
-//     }
-//   };
+        {/* Events Grid */}
+        {loading ? (
+          <div className="flex justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <p className="ml-3 text-gray-600">Finding events near you...</p>
+          </div>
+        ) : events.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="text-6xl mb-4">🔍</div>
+            <h3 className="text-xl font-medium text-gray-900 mb-2">No events found</h3>
+            <p className="text-gray-500">Try a different location or check back later</p>
+          </div>
+        ) : (
+          <>
+            <div className="mb-4 text-sm text-gray-600">
+              Found {events.length} event{events.length !== 1 ? 's' : ''} from student platforms
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {events.map((event) => (
+                <EventCard key={event.id} event={event} formatDate={formatDate} />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
 
-//   const formatTime = (dateString: string) => {
-//     try {
-//       const date = new Date(dateString);
-//       return date.toLocaleTimeString('en-US', {
-//         hour: 'numeric',
-//         minute: '2-digit',
-//         hour12: true
-//       });
-//     } catch {
-//       return '';
-//     }
-//   };
+// Event Card Component
+function EventCard({ event, formatDate }: { event: Event; formatDate: (date: string) => string }) {
+  const getPlatformColor = (platform: string) => {
+    switch(platform) {
+      case 'Unstop': return 'bg-purple-100 text-purple-700';
+      case 'Devfolio': return 'bg-blue-100 text-blue-700';
+      case 'HackerEarth': return 'bg-green-100 text-green-700';
+      default: return 'bg-gray-100 text-gray-700';
+    }
+  };
 
-//   return (
-//     <div className="p-4 bg-white rounded-lg shadow">
-//       <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-//         <FiCalendar /> Upcoming Tech Events
-//       </h2>
-
-//       {/* Location Filter */}
-//       <div className="flex gap-2 mb-4">
-//         <input
-//           type="text"
-//           placeholder="Enter location (e.g., Bangalore, Mumbai, Delhi)..."
-//           className="flex-1 p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-//           value={location}
-//           onChange={(e) => setLocation(e.target.value)}
-//           onKeyPress={handleKeyPress}
-//         />
-//         <button
-//           onClick={handleSearch}
-//           disabled={loading || !location.trim()}
-//           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
-//         >
-//           {loading ? 'Searching...' : 'Search'}
-//         </button>
-//       </div>
-
-//       {/* Error Message */}
-//       {error && (
-//         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-//           {error}
-//         </div>
-//       )}
-
-//       {/* Loading State */}
-//       {loading && (
-//         <div className="text-center py-8">
-//           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-//           <p className="mt-2 text-gray-600">Searching for events...</p>
-//         </div>
-//       )}
-
-//       {/* Events List */}
-//       <div className="space-y-3">
-//         {!loading && events.length === 0 && !error ? (
-//           <div className="text-center py-8">
-//             <FiCalendar className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-//             <p className="text-gray-500">No upcoming events found for "{location}"</p>
-//             <p className="text-sm text-gray-400 mt-1">Try searching for a different location</p>
-//           </div>
-//         ) : (
-//           events.map((event) => (
-//             <div key={event.id} className="p-4 border rounded-lg hover:bg-gray-50 transition-colors">
-//               <div className="flex justify-between items-start mb-2">
-//                 <h3 className="font-bold text-lg text-gray-900">{event.title}</h3>
-//                 <span className={`px-2 py-1 text-xs rounded-full ${getEventColor(event.type)}`}>
-//                   {event.type}
-//                 </span>
-//               </div>
-              
-//               {event.description && (
-//                 <p className="text-sm text-gray-600 mb-3 line-clamp-3">{event.description}</p>
-//               )}
-
-//               <div className="flex flex-wrap items-center gap-4 text-sm text-gray-500 mb-2">
-//                 <span className="flex items-center">
-//                   <FiMapPin className="mr-1" /> {event.location}
-//                 </span>
-//                 <span className="flex items-center">
-//                   <FiCalendar className="mr-1" /> {formatDate(event.start)}
-//                 </span>
-//                 {event.start && (
-//                   <span>
-//                     {formatTime(event.start)}
-//                     {event.end && ` - ${formatTime(event.end)}`}
-//                   </span>
-//                 )}
-//               </div>
-
-//               {event.url && (
-//                 <a
-//                   href={event.url}
-//                   target="_blank"
-//                   rel="noopener noreferrer"
-//                   className="inline-flex items-center text-blue-600 text-sm hover:underline"
-//                 >
-//                   <FiExternalLink className="mr-1" /> View Event Details
-//                 </a>
-//               )}
-//             </div>
-//           ))
-//         )}
-//       </div>
-
-//       {/* Quick Location Buttons */}
-//       <div className="mt-4 pt-4 border-t">
-//         <p className="text-sm text-gray-600 mb-2">Quick search:</p>
-//         <div className="flex flex-wrap gap-2">
-//           {['Bangalore', 'Mumbai', 'Delhi', 'Hyderabad', 'Chennai', 'Pune'].map((city) => (
-//             <button
-//               key={city}
-//               onClick={() => {
-//                 setLocation(city);
-//                 fetchEvents(city);
-//               }}
-//               className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded-full transition-colors"
-//             >
-//               {city}
-//             </button>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// }
+  return (
+    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 group">
+      <div className="p-5">
+        {/* Platform Badge */}
+        <div className="flex justify-between items-start mb-3">
+          <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getPlatformColor(event.platform)}`}>
+            {event.platform}
+          </span>
+          {event.isFree && (
+            <span className="bg-green-100 text-green-700 text-xs px-2 py-1 rounded-full font-semibold">
+              🎓 FREE
+            </span>
+          )}
+        </div>
+        
+        {/* Title */}
+        <h3 className="text-lg font-bold text-gray-900 mb-2 line-clamp-2 group-hover:text-blue-600 transition">
+          {event.title}
+        </h3>
+        
+        {/* Description */}
+        <p className="text-gray-600 text-sm mb-4 line-clamp-2">
+          {event.description || 'Join this exciting tech event for students!'}
+        </p>
+        
+        {/* Details */}
+        <div className="space-y-2 mb-4 text-sm">
+          <div className="flex items-center gap-2 text-gray-500">
+            <span>📅</span>
+            <span>{formatDate(event.date)}</span>
+          </div>
+          <div className="flex items-center gap-2 text-gray-500">
+            <span>📍</span>
+            <span className="line-clamp-1">{event.location}</span>
+          </div>
+          <div className="flex items-center gap-2 text-blue-600 text-xs">
+            <span>🎯</span>
+            <span>{event.source}</span>
+          </div>
+        </div>
+        
+        {/* Register Button */}
+        <a
+          href={event.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="block w-full text-center px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all font-medium"
+        >
+          Register Now →
+        </a>
+      </div>
+    </div>
+  );
+}

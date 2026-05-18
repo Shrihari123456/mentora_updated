@@ -41,7 +41,7 @@ export default function StudentChatPage() {
               mb: 1 
             }}
           >
-            Chat between CA242711 and MNT001
+            
           </Typography>
           <Typography
             variant="body2"
